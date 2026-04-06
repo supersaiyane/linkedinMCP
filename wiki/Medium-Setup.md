@@ -1,138 +1,190 @@
+---
+title: Medium Integration Setup
+sidebar_label: Medium Setup
+sidebar_position: 9
+audience: L1-L2
+---
+
 # Medium Integration Setup
 
-Publish articles to Medium directly from Claude Desktop. Supports markdown and HTML, tags, draft/public/unlisted modes, and cross-posting with canonical URLs.
+**TL;DR:** Get an integration token from Medium's settings page and add it to your environment config. This enables two tools: `medium_publish_article` (publish markdown or HTML articles with tags, draft/public/unlisted modes, and canonical URLs) and `medium_get_profile` (view your Medium identity).
 
-**Time to set up:** 1 minute
+**Prerequisite knowledge:**
 
-## Step 1: Get a Medium Integration Token
+- A Medium account ([medium.com](https://medium.com))
+- Familiarity with environment variables or the Claude Desktop config file
+- The LinkedIn MCP server installed and running (see [Getting Started](Getting-Started))
+
+---
+
+## What This Does (L1)
+
+The Medium integration lets you publish articles to your Medium account directly from Claude Desktop. You can write in markdown or HTML, assign up to 5 tags, choose whether to publish immediately or save as a draft, and set a canonical URL when cross-posting content from another site.
+
+Medium integration is optional. If the `MEDIUM_INTEGRATION_TOKEN` environment variable is not set, the server starts normally but the two Medium tools do not appear.
+
+---
+
+## Step-by-Step Setup (L2)
+
+### Step 1: Get a Medium Integration Token
 
 1. Go to [medium.com/me/settings/security](https://medium.com/me/settings/security)
-2. Scroll to **"Integration tokens"**
-3. Enter a description (e.g., "LinkedIn MCP Server")
+2. Scroll down to the **"Integration tokens"** section
+3. Enter a description in the text field (e.g., `LinkedIn MCP Server`)
 4. Click **"Get integration token"**
-5. Copy the token
+5. Copy the generated token
 
-## Step 2: Configure
+The token is a long alphanumeric string. It does not expire unless you revoke it manually.
 
-Add to your `.env` file:
+### Step 2: Configure the Environment Variable
+
+Add the token to your `.env` file:
 
 ```bash
-MEDIUM_INTEGRATION_TOKEN=your_token_here
+MEDIUM_INTEGRATION_TOKEN=<MEDIUM_TOKEN>
 ```
 
-Or in Claude Desktop config:
+Or in the Claude Desktop config (`claude_desktop_config.json`):
 
 ```json
 {
   "mcpServers": {
     "linkedin": {
       "command": "node",
-      "args": ["/path/to/linkedinMCP/dist/index.js"],
+      "args": ["/path/to/linkedin-mcp-server/dist/index.js"],
       "env": {
-        "LINKEDIN_CLIENT_ID": "...",
-        "LINKEDIN_CLIENT_SECRET": "...",
-        "MEDIUM_INTEGRATION_TOKEN": "your_token_here"
+        "LINKEDIN_CLIENT_ID": "<LINKEDIN_CLIENT_ID>",
+        "LINKEDIN_CLIENT_SECRET": "<LINKEDIN_CLIENT_SECRET>",
+        "MEDIUM_INTEGRATION_TOKEN": "<MEDIUM_TOKEN>"
       }
     }
   }
 }
 ```
 
-## Step 3: Restart Claude Desktop
+### Step 3: Restart the Server
 
-Quit and reopen. Two new tools will appear: `medium_publish_article` and `medium_get_profile`.
+Quit and reopen Claude Desktop. Two new tools will become available: `medium_publish_article` and `medium_get_profile`. You can verify by asking Claude to show your Medium profile.
 
-## Available Tools
+---
 
-### medium_publish_article
+## Publish Statuses (L2)
 
-Publishes an article to your Medium account.
+Every article you publish through the API has one of three statuses:
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `title` | string | Yes | -- | Article title (max 200 chars) |
-| `content` | string | Yes | -- | Article body |
-| `content_format` | string | No | `markdown` | `markdown` or `html` |
-| `tags` | string[] | No | -- | Up to 5 tags |
-| `publish_status` | string | No | `draft` | `public`, `draft`, or `unlisted` |
-| `canonical_url` | string | No | -- | Original URL if cross-posting |
+| Status | Behavior |
+|--------|----------|
+| `draft` (default) | Saved to your Medium drafts. You can review, edit, add images, and publish manually from Medium's editor. |
+| `public` | Published immediately to your Medium profile and distributed through Medium's recommendation system. |
+| `unlisted` | Published but hidden from your profile page and Medium feeds. Accessible only via direct link. |
 
-**Example prompts:**
+**Recommendation:** Use `draft` for most workflows. This gives you a chance to preview formatting, add inline images, adjust section breaks, and verify how the article renders on Medium before it goes live. Switch to `public` only when you are confident the content is final.
 
-```
-Write a Medium article about building MCP servers and save it as a draft
-```
+---
 
-```
-Publish a public Medium article titled "AI in 2026" with tags ai, technology, future
-```
+## Cross-Posting with Canonical URLs (L3)
 
-```
-Cross-post my blog from https://myblog.com/post to Medium as unlisted with the canonical URL set
-```
+### What is a canonical URL?
 
-### medium_get_profile
+A canonical URL tells search engines which version of a piece of content is the original. When the same article exists at multiple URLs (your blog, Medium, LinkedIn), search engines need to know which one to index and rank. The canonical URL is that signal.
 
-Shows your Medium username and profile URL. No parameters.
+### Why it matters for SEO
+
+Without a canonical URL, search engines may treat your Medium republication as duplicate content. This can dilute ranking signals across both URLs, reducing visibility for both your blog and your Medium post. Setting the canonical URL to your original blog post URL consolidates ranking authority on the original.
+
+### How to use it
+
+When cross-posting content that was first published on your own site, set `canonical_url` to the original URL:
 
 ```
-Show my Medium profile
+Publish my blog post to Medium as public.
+The original is at https://myblog.com/building-mcp-servers.
+Set the canonical URL to https://myblog.com/building-mcp-servers.
+Use tags: mcp, ai, tutorial.
 ```
 
-## Publish Statuses
+Medium renders a small "Originally published at" link at the bottom of the article, pointing to the canonical URL.
 
-| Status | What Happens |
-|--------|-------------|
-| `draft` (default) | Saved to your drafts. You can review and publish from Medium. |
-| `public` | Published immediately to your Medium profile. |
-| `unlisted` | Published but not shown in your profile or Medium feeds. Only accessible via direct link. |
+---
 
-**Recommendation:** Use `draft` by default. Review on Medium, then publish manually. This gives you a chance to add images, format sections, and preview before it goes live.
+## Multi-Platform Workflow Example (L2)
 
-## Cross-Posting with Canonical URLs
-
-If you're republishing content from your blog, always set the `canonical_url` to your original post URL. This tells search engines which version is the original, preventing SEO penalties for duplicate content.
+The MCP server supports publishing to both Medium and LinkedIn in a single conversation. A common pattern:
 
 ```
-Publish my blog post from https://myblog.com/my-guide to Medium as public.
-Set the canonical URL to https://myblog.com/my-guide. Use tags: programming, tutorial.
+Here is my article about AI trends in 2026:
+
+[paste article content]
+
+1. Publish it on Medium as a draft with tags ai, technology, trends, future, predictions
+2. Create a LinkedIn post summarizing the three main takeaways, with a link to the Medium article
+3. Schedule the LinkedIn post for tomorrow at 10:00 AM UTC
 ```
 
-## Multi-Platform Workflow
+This produces:
 
-The most powerful pattern -- publish to Medium AND LinkedIn in one go:
+- A Medium draft you can review and publish when ready
+- A LinkedIn post linking to the Medium article, scheduled for optimal engagement time
+- A Telegram notification (if configured) when the scheduled LinkedIn post fires
 
-```
-Here's my article about AI trends:
+---
 
-[paste content]
+## Medium API Limits and Constraints (L3)
 
-1. Publish it on Medium as a draft with tags ai, tech, future
-2. Create a LinkedIn post summarizing the 3 key points with a link to the Medium article
-3. Schedule the LinkedIn post for tomorrow at 10am
-```
+| Constraint | Limit | Notes |
+|------------|-------|-------|
+| Tags per article | 5 maximum | Additional tags are silently dropped by Medium |
+| Content format | `markdown` or `html` | Plain text is not accepted by the API |
+| Images in content | URL references only | Use markdown syntax `![alt text](https://example.com/image.png)`. Local file paths do not work. Upload images to an image host first, or use the `linkedin_upload_media` tool and reference the resulting URL. |
+| Title length | 200 characters maximum | Enforced by the MCP server's input validation |
+| Rate limits | Undocumented | Medium's API has unpublished rate limits. Normal publishing patterns (a few articles per day) will not trigger them. |
+| Article editing | Not supported via API | Once published, articles can only be edited through Medium's web editor |
 
-## Medium API Limits
-
-- **Tags:** Maximum 5 per article
-- **Content format:** Markdown or HTML only (not plain text)
-- **Rate limits:** Medium's API has undocumented rate limits. In practice, you won't hit them with normal publishing.
-- **Images in content:** Use markdown image syntax (`![alt](url)`) with publicly accessible image URLs. Local file paths won't work -- upload images to an image host first, or use LinkedIn's upload tool and reference the URL.
+---
 
 ## Troubleshooting
 
-### "medium_publish_article" tool not showing
+### `medium_publish_article` tool not showing in Claude Desktop
 
-`MEDIUM_INTEGRATION_TOKEN` is not set. Add it to your config and restart Claude Desktop.
+The `MEDIUM_INTEGRATION_TOKEN` environment variable is not set or is empty. Verify it is present in your config, then restart Claude Desktop.
 
 ### 401 Unauthorized
 
-Your integration token is invalid or expired. Generate a new one at [medium.com/me/settings/security](https://medium.com/me/settings/security).
+Your integration token is invalid or has been revoked. Generate a new one at [medium.com/me/settings/security](https://medium.com/me/settings/security) and update your config.
 
 ### 403 Forbidden
 
-Medium may have restricted API access for your account. This is rare but can happen with new accounts or accounts flagged for spam.
+Medium may have restricted API access for your account. This is uncommon but can occur with new accounts or accounts flagged by Medium's abuse detection. Contact Medium support if the issue persists.
 
-### Article published but no content shows
+### Article published but content appears empty or malformed
 
-Make sure `content_format` matches your content. If you're writing markdown, use `markdown`. If you're pasting HTML, use `html`.
+Verify that `content_format` matches your actual content. If the content is markdown, use `markdown`. If the content contains HTML tags, use `html`. Mixing formats (e.g., sending markdown with `content_format` set to `html`) produces rendering errors.
+
+### Images not displaying in published article
+
+Medium's API requires image URLs to be publicly accessible on the internet. Common issues:
+
+- The image URL points to a private or authenticated resource
+- The image URL uses `localhost` or an internal network address
+- The image host blocks hotlinking
+
+Upload images to a public host (e.g., Imgur, Cloudflare Images, or your own CDN) before referencing them.
+
+---
+
+## Key Takeaways
+
+- Medium integration requires a single environment variable: `MEDIUM_INTEGRATION_TOKEN`.
+- Default to `draft` status and review on Medium before publishing publicly.
+- Always set `canonical_url` when cross-posting content from your blog to preserve SEO authority.
+- Images must be referenced by public URL; local file paths are not supported by Medium's API.
+- Tags are capped at 5 per article.
+
+## Related Pages
+
+- [Getting Started](Getting-Started) -- initial server setup
+- [Configuration](Configuration) -- full environment variable reference
+- [Tools Reference](Tools-Reference) -- detailed parameter reference for `medium_publish_article` and `medium_get_profile`
+- [Telegram Setup](Telegram-Setup) -- receive notifications when Medium articles are published
+- [Troubleshooting](Troubleshooting) -- additional debugging guidance
