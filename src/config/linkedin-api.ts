@@ -3,7 +3,7 @@ export const LINKEDIN_API = {
   AUTH_URL: "https://www.linkedin.com/oauth/v2/authorization",
   TOKEN_URL: "https://www.linkedin.com/oauth/v2/accessToken",
 
-  VERSION: "202401",
+  VERSION: "202603",
 
   SCOPES: ["openid", "profile", "w_member_social"],
 
@@ -15,7 +15,7 @@ export const LINKEDIN_API = {
   },
 
   DEFAULT_HEADERS: {
-    "LinkedIn-Version": "202401",
+    "LinkedIn-Version": "202603",
     "X-Restli-Protocol-Version": "2.0.0",
     "Content-Type": "application/json",
   },
