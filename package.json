@@ -1,0 +1,48 @@
+{
+  "name": "linkedin-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for LinkedIn OAuth 2.0 authentication and content publishing",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "linkedin-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "linkedin",
+    "oauth"
+  ],
+  "author": "Gurpreet Singh",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "axios": "^1.14.0",
+    "better-sqlite3": "^11.10.0",
+    "croner": "^9.1.0",
+    "dotenv": "^17.4.1",
+    "open": "^10.2.0",
+    "pino": "^9.14.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.19.39",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
+    "eslint": "^9.39.4",
+    "msw": "^2.12.14",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}

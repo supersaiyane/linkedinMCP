@@ -1,0 +1,9 @@
+{
+  "sub": "test123",
+  "name": "Test User",
+  "given_name": "Test",
+  "family_name": "User",
+  "picture": "https://example.com/photo.jpg",
+  "email": "test@example.com",
+  "email_verified": true
+}
