@@ -1,6 +1,6 @@
 # LinkedIn MCP Server Wiki
 
-Welcome to the LinkedIn MCP Server wiki. This MCP server connects Claude Desktop to your personal LinkedIn account, letting you manage your LinkedIn presence using natural language.
+Welcome to the LinkedIn MCP Server wiki. This MCP server connects Claude Desktop to your personal LinkedIn and Medium accounts, with optional Telegram notifications for everything.
 
 ## Quick Navigation
 
@@ -9,7 +9,9 @@ Welcome to the LinkedIn MCP Server wiki. This MCP server connects Claude Desktop
 | [Getting Started](Getting-Started.md) | Prerequisites, installation, and first-time setup |
 | [LinkedIn App Setup](LinkedIn-App-Setup.md) | Step-by-step guide to creating your LinkedIn developer app |
 | [Configuration](Configuration.md) | All environment variables and config options explained |
-| [Tools Reference](Tools-Reference.md) | Complete reference for all 7 MCP tools |
+| [Telegram Setup](Telegram-Setup.md) | Set up Telegram notifications (2 minutes) |
+| [Medium Setup](Medium-Setup.md) | Set up Medium article publishing |
+| [Tools Reference](Tools-Reference.md) | Complete reference for all 9 MCP tools |
 | [Automation Recipes](Automation-Recipes.md) | Ready-to-use workflows and prompt templates |
 | [Architecture](Architecture.md) | How the server works under the hood |
 | [Troubleshooting](Troubleshooting.md) | Common errors and how to fix them |
@@ -26,6 +28,8 @@ Once connected to Claude Desktop, you can:
 - **View your profile** info and URN
 - **Schedule posts** for future publication
 - **List scheduled posts** and check their status
+- **Publish articles on Medium** with markdown/HTML, tags, and draft/public modes
+- **Get Telegram notifications** when posts publish, fail, or authenticate
 
 All through natural language -- just chat with Claude.
 
@@ -33,6 +37,8 @@ All through natural language -- just chat with Claude.
 
 ```
 You (Claude Desktop) --> Claude AI --> MCP Protocol --> LinkedIn MCP Server --> LinkedIn API
+                                                                |           --> Medium API
+                                                                |           --> Telegram Bot API
 ```
 
 1. You type a request in Claude Desktop (e.g., "Post about AI on LinkedIn")

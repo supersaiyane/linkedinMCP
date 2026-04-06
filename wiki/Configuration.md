@@ -56,6 +56,23 @@ Use these when running in CI/CD or headless environments where browser-based OAu
 | `RATE_LIMIT_POSTS_PER_DAY` | `100` | Maximum posts per 24-hour window |
 | `RATE_LIMIT_API_PER_MINUTE` | `150` | Maximum API calls per 60-second window |
 
+### Telegram Notifications (optional)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TELEGRAM_BOT_TOKEN` | _(none)_ | Telegram bot token from @BotFather |
+| `TELEGRAM_CHAT_ID` | _(none)_ | Your Telegram chat ID |
+
+Both must be set to enable notifications. See [Telegram Setup](Telegram-Setup.md) for a step-by-step guide.
+
+### Medium Integration (optional)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MEDIUM_INTEGRATION_TOKEN` | _(none)_ | Medium API integration token |
+
+When set, enables `medium_publish_article` and `medium_get_profile` tools. See [Medium Setup](Medium-Setup.md).
+
 ## Where to Set Variables
 
 ### Option A: `.env` File (for local development)

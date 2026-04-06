@@ -1,6 +1,6 @@
 # Tools Reference
 
-Complete reference for all 7 MCP tools exposed by the LinkedIn MCP server. You don't call these directly -- Claude calls them based on your natural language requests.
+Complete reference for all 9 MCP tools exposed by the LinkedIn MCP server. You don't call these directly -- Claude calls them based on your natural language requests.
 
 ---
 
@@ -246,3 +246,69 @@ Scheduled Posts:
 - Posts are sorted by scheduled time (earliest first)
 - Published posts include the LinkedIn URL
 - Failed posts include the error message
+
+---
+
+## medium_publish_article
+
+Publishes an article to your Medium account. Only available when `MEDIUM_INTEGRATION_TOKEN` is configured.
+
+**Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `title` | string | Yes | -- | Article title (max 200 characters) |
+| `content` | string | Yes | -- | Article body (markdown or HTML) |
+| `content_format` | string | No | `markdown` | `markdown` or `html` |
+| `tags` | string[] | No | -- | Up to 5 tags |
+| `publish_status` | string | No | `draft` | `public`, `draft`, or `unlisted` |
+| `canonical_url` | string | No | -- | Original URL if cross-posting |
+
+**Example prompts:**
+```
+Write a Medium article about building MCP servers and save it as a draft
+
+Publish a public article on Medium titled "AI in 2026" with tags ai, technology
+
+Cross-post my blog from https://myblog.com/post to Medium with the canonical URL set
+```
+
+**Output on success:**
+```
+Medium article saved as draft!
+
+AI in 2026
+https://medium.com/@username/ai-in-2026-abc123
+Status: Saved as draft
+```
+
+**Notes:**
+- Default status is `draft` -- review on Medium before publishing
+- Medium allows max 5 tags per article
+- Use `canonical_url` when cross-posting to avoid SEO penalties
+- Markdown and HTML are supported; plain text is not
+- Images must be URLs (not local files) -- use markdown `![alt](url)` syntax
+- If Telegram notifications are configured, you'll get a notification when published
+
+---
+
+## medium_get_profile
+
+Fetches your Medium profile information. Only available when `MEDIUM_INTEGRATION_TOKEN` is configured.
+
+**Parameters:** None
+
+**Example prompts:**
+```
+Show my Medium profile
+What's my Medium username?
+```
+
+**Output on success:**
+```
+Medium Profile
+
+Name: Gurpreet Singh
+Username: @gurpreetsingh
+Profile: https://medium.com/@gurpreetsingh
+```

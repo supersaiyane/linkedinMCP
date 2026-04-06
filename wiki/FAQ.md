@@ -105,6 +105,42 @@ Only what you explicitly ask it to post: text content, images, article links. It
 
 ---
 
+## Telegram
+
+### Are Telegram notifications required?
+
+**No.** Completely optional. If `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are not set, the server works exactly the same -- just without notifications.
+
+### Can notifications fail silently?
+
+**Yes, by design.** Notifications are best-effort. If Telegram is down or your token is wrong, the main operation (posting, scheduling, etc.) still succeeds. A warning is logged but nothing breaks.
+
+### Can I use a Telegram group instead of a private chat?
+
+**Yes.** Add the bot to a group, send a message in the group, then use the group's chat ID (it's negative, e.g., `-987654321`).
+
+---
+
+## Medium
+
+### Do I need a Medium account to use the LinkedIn features?
+
+**No.** Medium integration is completely optional. If `MEDIUM_INTEGRATION_TOKEN` is not set, the Medium tools simply don't appear. All LinkedIn features work independently.
+
+### Can I cross-post from my blog to Medium?
+
+**Yes.** Use the `canonical_url` parameter to set your original blog URL. This tells search engines which version is the original, preventing SEO penalties for duplicate content.
+
+### Why is the default publish status "draft"?
+
+Safety. A draft lets you review formatting, add images, and preview on Medium before publishing. You can always set `publish_status` to `public` if you want instant publishing.
+
+### Can I edit a Medium article after publishing?
+
+**Not through this MCP server.** Medium's API doesn't support editing published posts. You'd need to edit directly on medium.com.
+
+---
+
 ## Troubleshooting
 
 ### See the [Troubleshooting](Troubleshooting.md) page for detailed error solutions.

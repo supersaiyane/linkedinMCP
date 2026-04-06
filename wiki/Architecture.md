@@ -15,19 +15,19 @@ Claude Desktop
 |  +---------------------+ |
 |  |    MCP SDK Layer     | |  <-- Handles protocol, tool registration
 |  +---------------------+ |
-|  |    Tool Handlers     | |  <-- 7 tools: authenticate, create_post, etc.
+|  |    Tool Handlers     | |  <-- 9 tools: LinkedIn + Medium
 |  +---------------------+ |
-|  |     Services         | |  <-- Content formatting, scheduling, media
+|  |     Services         | |  <-- Formatting, scheduling, media, notifications
 |  +---------------------+ |
-|  |    API Client        | |  <-- HTTP calls, retry, rate limiting
+|  |    API Clients       | |  <-- LinkedIn + Medium HTTP, retry, rate limiting
 |  +---------------------+ |
 |  |    Auth Manager      | |  <-- OAuth 2.0, token lifecycle
 |  +---------------------+ |
 +---------------------------+
      |
-     | HTTPS (REST API)
+     | HTTPS (REST APIs)
      v
-  LinkedIn API
+  LinkedIn API  /  Medium API  /  Telegram Bot API
 ```
 
 ## Component Details
@@ -37,7 +37,7 @@ Claude Desktop
 Constructs all dependencies in order and wires them together (manual dependency injection, no framework):
 
 ```
-Config -> Logger -> TokenStore -> AuthManager -> RateLimiter -> APIClient -> Services -> Server
+Config -> Logger -> TokenStore -> AuthManager -> RateLimiter -> APIClient -> MediumClient -> Services -> Notifier -> Server
 ```
 
 Handles:
@@ -175,7 +175,30 @@ LinkedInAPIClient.createPost(content)
   |
   v
 Return: "Post published! URL: https://linkedin.com/..."
+  |
+  v
+TelegramNotifier.notifyPostPublished(url, preview)
+  -> best-effort, never blocks
 ```
+
+## Medium Client (`src/api/medium-client.ts`)
+
+Simple REST client for Medium's API:
+- `getUser()` -- GET /v1/me, fetches user ID and profile
+- `createPost(input)` -- POST /v1/users/{id}/posts, publishes article
+
+Supports markdown and HTML content, tags (max 5), draft/public/unlisted status, and canonical URLs for cross-posting.
+
+Only instantiated when `MEDIUM_INTEGRATION_TOKEN` is set. Tools don't appear in Claude Desktop without it.
+
+## Telegram Notifier (`src/services/telegram-notifier.ts`)
+
+Sends notifications via the official Telegram Bot API:
+- POST `https://api.telegram.org/bot{token}/sendMessage`
+- Markdown-formatted messages with links
+- Best-effort delivery -- failures are logged but never throw
+
+Only instantiated when both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set. Injected into tool handlers and the scheduler via dependency injection.
 
 ## Transport Modes
 
@@ -220,3 +243,6 @@ data/
 - Rate limiting prevents accidental API abuse
 - OAuth state parameter prevents CSRF
 - Callback server auto-closes after use
+- Telegram Bot API is official and encrypted (HTTPS)
+- Medium integration token stored in env only, never on disk
+- Notifications contain only post previews and URLs, never credentials

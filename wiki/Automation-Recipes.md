@@ -205,6 +205,50 @@ Keep it authentic, not corporate. Post it now.
 
 ---
 
+## Medium Workflows
+
+### Publish a Draft Article
+
+```
+Write a Medium article about [topic]. Use markdown formatting with headers, code blocks, and bullet points. Save it as a draft with tags: [tag1], [tag2], [tag3].
+```
+
+### Cross-Post from Blog
+
+```
+Here's my blog post about [topic]:
+
+[paste content or URL]
+
+Publish it on Medium as unlisted with the canonical URL set to [original URL]. Tags: [tag1], [tag2].
+```
+
+### LinkedIn + Medium Combo
+
+```
+Write a comprehensive article about [topic] (1500+ words with examples).
+
+1. Publish the full article on Medium as a draft with tags [tag1], [tag2]
+2. Create a LinkedIn post with the 3 key takeaways and a teaser
+3. Schedule the LinkedIn post for tomorrow at 10am
+
+Show me both drafts before publishing.
+```
+
+### Thought Leadership Pipeline
+
+```
+I want to establish thought leadership on [topic]. Here's my plan:
+
+1. Write a detailed Medium article (public) with tags [tag1], [tag2], [tag3]
+2. Create a LinkedIn post summarizing the article with a link
+3. Schedule a follow-up LinkedIn post for 3 days later asking for reader feedback
+
+Start with the Medium article draft.
+```
+
+---
+
 ## Tips for Better Results
 
 1. **Draft first, post second.** Always ask Claude to show you the draft before posting. Say "show me the draft first" or "don't post yet."

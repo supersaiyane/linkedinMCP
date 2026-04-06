@@ -200,6 +200,44 @@ The server retries 3 times. Common failure reasons:
 
 ---
 
+## Telegram Issues
+
+### No Telegram notifications arriving
+
+**Checklist:**
+1. Did you message your bot first? You must send at least one message before the bot can reply.
+2. Check `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are set correctly.
+3. Visit `https://api.telegram.org/bot<TOKEN>/getUpdates` to verify your chat ID.
+4. Restart Claude Desktop after changing env vars.
+
+---
+
+### "Telegram notification failed" in logs
+
+**Fix:** The bot token or chat ID is incorrect. Notifications are best-effort -- this warning doesn't affect the main tool operation. Your post was still published.
+
+---
+
+## Medium Issues
+
+### Medium tools not appearing in Claude Desktop
+
+**Fix:** `MEDIUM_INTEGRATION_TOKEN` is not set. Add it to your `.env` or Claude Desktop config and restart.
+
+---
+
+### Medium publish fails with 401
+
+**Fix:** Your integration token is invalid or expired. Generate a new one at [medium.com/me/settings/security](https://medium.com/me/settings/security).
+
+---
+
+### Medium article published but content is empty
+
+**Fix:** Make sure `content_format` matches your content. Use `markdown` for markdown and `html` for HTML.
+
+---
+
 ## Development Issues
 
 ### TypeScript compilation errors after editing

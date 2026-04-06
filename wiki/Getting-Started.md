@@ -98,7 +98,15 @@ Your browser will open to the LinkedIn authorization page. Sign in, click "Allow
 
 **You only need to do this once.** Tokens are encrypted and stored locally. They auto-refresh for about a year.
 
-## Step 9: Start Using It
+## Step 9: (Optional) Set Up Telegram Notifications
+
+Get notified on your phone whenever a post publishes. See [Telegram Setup](Telegram-Setup.md) -- takes 2 minutes.
+
+## Step 10: (Optional) Set Up Medium
+
+Publish articles to Medium from Claude Desktop. See [Medium Setup](Medium-Setup.md) -- takes 1 minute.
+
+## Step 11: Start Using It
 
 Try these:
 
@@ -107,6 +115,10 @@ Try these:
 > Show my LinkedIn profile
 
 > Schedule a post for tomorrow at 10am: Excited about the week ahead!
+
+If you set up Medium:
+
+> Write a Medium article about getting started with MCP and save it as a draft
 
 See [Tools Reference](Tools-Reference.md) for everything you can do, and [Automation Recipes](Automation-Recipes.md) for advanced workflows.
 
@@ -119,3 +131,5 @@ See [Tools Reference](Tools-Reference.md) for everything you can do, and [Automa
 - [ ] Claude Desktop shows the hammer icon after restart
 - [ ] "Authenticate with LinkedIn" opens the browser and succeeds
 - [ ] "Show my LinkedIn profile" returns your name
+- [ ] (Optional) Telegram bot sends you a notification on authentication
+- [ ] (Optional) "Show my Medium profile" returns your username

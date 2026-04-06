@@ -1,6 +1,6 @@
 # LinkedIn MCP Server
 
-An MCP (Model Context Protocol) server that connects Claude to your personal LinkedIn account. Authenticate once, then use natural language in Claude Desktop to create posts, publish articles, upload images, and schedule content.
+An MCP (Model Context Protocol) server that connects Claude to your personal LinkedIn and Medium accounts. Authenticate once, then use natural language in Claude Desktop to create posts, publish articles, upload images, schedule content, and get Telegram notifications for everything.
 
 **Author:** Gurpreet Singh ([linkedin.com/in/gurpreettsengh](https://linkedin.com/in/gurpreettsengh))
 
@@ -18,6 +18,8 @@ An MCP (Model Context Protocol) server that connects Claude to your personal Lin
 | "Publish an article titled 'My Guide' from https://myblog.com/guide" | Shares article link as rich post |
 | "Schedule a post for tomorrow at 9am: Excited to announce..." | Queues post for future publishing |
 | "List my scheduled posts" | Shows all pending/published/failed scheduled posts |
+| "Publish an article on Medium about AI" | Creates a Medium article (draft or public) |
+| "Show my Medium profile" | Shows your Medium username and profile URL |
 
 ---
 
@@ -28,6 +30,8 @@ An MCP (Model Context Protocol) server that connects Claude to your personal Lin
 - **Node.js 20+** installed ([download](https://nodejs.org/))
 - **Claude Desktop** installed ([download](https://claude.ai/download))
 - A **personal LinkedIn account**
+- (Optional) A **Telegram** account for notifications
+- (Optional) A **Medium** account for article publishing
 
 ### Step 1: Create a LinkedIn Developer App
 
@@ -81,6 +85,34 @@ LINKEDIN_CLIENT_SECRET=your_client_secret_here
 ```
 
 That's it for minimum setup. The other values have sensible defaults.
+
+#### Optional: Telegram Notifications
+
+Get notified on your phone whenever a post is published, a scheduled post fires, or something fails.
+
+1. Open Telegram and message **@BotFather**
+2. Send `/newbot` and follow the prompts to create a bot
+3. Copy the **bot token** BotFather gives you
+4. Send any message to your new bot (e.g., "hi")
+5. Open `https://api.telegram.org/bot<YOUR_TOKEN>/getUpdates` in your browser
+6. Find `"chat":{"id":123456789}` in the response -- that's your chat ID
+7. Add to `.env`:
+   ```bash
+   TELEGRAM_BOT_TOKEN=your_bot_token
+   TELEGRAM_CHAT_ID=your_chat_id
+   ```
+
+#### Optional: Medium Integration
+
+Publish articles directly to Medium from Claude Desktop.
+
+1. Go to [medium.com/me/settings/security](https://medium.com/me/settings/security)
+2. Scroll to **"Integration tokens"**
+3. Enter a description and click **"Get token"**
+4. Add to `.env`:
+   ```bash
+   MEDIUM_INTEGRATION_TOKEN=your_token
+   ```
 
 #### Optional: Change the encryption key
 
@@ -195,6 +227,34 @@ Lists scheduled posts, optionally filtered by status.
 - "Show my scheduled LinkedIn posts"
 - "List failed scheduled posts"
 
+### medium_publish_article
+Publishes an article to your Medium account. Requires `MEDIUM_INTEGRATION_TOKEN`.
+- **title** (required): Article title
+- **content** (required): Article body (markdown or HTML)
+- **content_format** (optional): `markdown` (default) or `html`
+- **tags** (optional): Up to 5 tags
+- **publish_status** (optional): `draft` (default), `public`, or `unlisted`
+- **canonical_url** (optional): Original URL if cross-posting (prevents SEO penalties)
+
+**Example prompts:**
+- "Write a Medium article about building MCP servers and save it as a draft"
+- "Publish a public Medium article titled 'AI in 2026' with tags ai, technology"
+- "Cross-post my blog article from https://myblog.com/post to Medium as unlisted"
+
+### medium_get_profile
+Fetches your Medium profile info. Requires `MEDIUM_INTEGRATION_TOKEN`.
+
+**Example prompts:**
+- "Show my Medium profile"
+
+### Telegram Notifications
+Not a tool you call -- notifications are sent automatically when configured. You'll get a Telegram message when:
+- A LinkedIn post is published
+- A LinkedIn article is published
+- A scheduled post publishes or fails
+- A Medium article is published
+- Authentication completes
+
 ---
 
 ## Automation Ideas
@@ -215,6 +275,12 @@ Once the MCP server is connected to Claude Desktop, you can build powerful workf
 
 ### Profile Check
 > "Get my LinkedIn profile and verify my authentication is still working."
+
+### Cross-Post to Medium
+> "Write an article about building MCP servers. Publish it on Medium as a draft, then create a LinkedIn post linking to it."
+
+### Multi-Platform Publishing
+> "Here's my article about AI trends. Publish it on Medium with tags ai, tech, future. Then create a LinkedIn post summarizing the key points with a link to the Medium article."
 
 ---
 
@@ -259,14 +325,16 @@ src/
     env-token-store.ts  # Read-only tokens from env vars (CI/CD)
   api/
     linkedin-client.ts  # LinkedIn REST API client
+    medium-client.ts    # Medium REST API client
     rate-limiter.ts     # Sliding window rate limiter
     retry.ts            # Axios retry interceptor
   tools/
-    *.tool.ts           # One file per MCP tool
+    *.tool.ts           # One file per MCP tool (LinkedIn + Medium)
   services/
-    content-formatter.ts # Text/hashtag processing
-    media-handler.ts     # File reading, MIME detection
-    post-scheduler.ts    # SQLite queue + cron dispatcher
+    content-formatter.ts  # Text/hashtag processing
+    media-handler.ts      # File reading, MIME detection
+    post-scheduler.ts     # SQLite queue + cron dispatcher
+    telegram-notifier.ts  # Telegram Bot API notifications
   models/
     schemas.ts          # Zod schemas for all data types
     errors.ts           # Typed error hierarchy
@@ -297,6 +365,9 @@ make docker-run
 | Token expired | Tokens auto-refresh. If refresh fails, re-authenticate |
 | Claude Desktop doesn't show tools | Check your `claude_desktop_config.json` path is correct and restart Claude Desktop |
 | Logs corrupting MCP protocol | This is fixed -- logs go to stderr. If you see JSON errors, rebuild with `npm run build` |
+| Telegram notifications not arriving | Verify you messaged your bot first, then check `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are correct |
+| Medium tools not showing | Set `MEDIUM_INTEGRATION_TOKEN` in your `.env` or Claude Desktop config and restart |
+| Medium publish fails with 401 | Your integration token may be invalid or expired. Generate a new one at medium.com/me/settings/security |
 
 ---
 
