@@ -679,7 +679,7 @@ In stdio mode, logs appear on stderr. Claude Desktop surfaces these in its MCP l
 
 ### Check Claude Desktop MCP logs
 
-Claude Desktop provides access to MCP server logs through its developer tools. Look for error messages from the `linkedin-mcp` server. The log entries include structured JSON with the service name, timestamp, and error details.
+Claude Desktop provides access to MCP server logs through its developer tools. Look for error messages from the `amplifyr-mcp` server. The log entries include structured JSON with the service name, timestamp, and error details.
 
 ### Test the server independently
 
@@ -692,14 +692,14 @@ npm run dev
 Expected output for a healthy startup:
 
 ```
-{"level":30,"time":"...","service":"linkedin-mcp","msg":"Connected via stdio transport"}
+{"level":30,"time":"...","service":"amplifyr-mcp","msg":"Connected via stdio transport"}
 ```
 
 If the server crashes, the error message will appear before this line.
 
 ### File an issue
 
-If you are stuck after trying the fixes above, open an issue at https://github.com/supersaiyane/linkedinMCP/issues with:
+If you are stuck after trying the fixes above, open an issue at https://github.com/supersaiyane/AmplifyrMCP/issues with:
 
 1. The full error message
 2. What you were trying to do

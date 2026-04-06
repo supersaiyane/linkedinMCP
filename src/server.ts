@@ -64,7 +64,7 @@ export class LinkedInMCPServer {
 
   constructor(private deps: ServerDeps) {
     this.server = new McpServer({
-      name: "linkedin-mcp",
+      name: "amplifyr-mcp",
       version: "1.0.0",
     });
 

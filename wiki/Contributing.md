@@ -20,8 +20,8 @@ How to set up a development environment, understand the codebase, write tests, a
 1. **Fork and clone the repository.**
 
     ```bash
-    git clone https://github.com/<YOUR_GITHUB_USERNAME>/linkedinMCP.git
-    cd linkedinMCP
+    git clone https://github.com/<YOUR_GITHUB_USERNAME>/AmplifyrMCP.git
+    cd AmplifyrMCP
     ```
 
 2. **Install dependencies.**
@@ -378,7 +378,7 @@ Add the tool to the [Tools-Reference](Tools-Reference) wiki page with its parame
 
 ## Reporting Issues
 
-[Open an issue](https://github.com/supersaiyane/linkedinMCP/issues) with:
+[Open an issue](https://github.com/supersaiyane/AmplifyrMCP/issues) with:
 
 - What you expected to happen.
 - What happened instead.

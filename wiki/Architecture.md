@@ -7,7 +7,7 @@ audience: L1-L5
 
 # Architecture
 
-**TL;DR:** The LinkedIn MCP Server is a bridge between Claude Desktop and the LinkedIn, Medium, and Telegram APIs. It uses the MCP SDK for protocol handling, axios for HTTP with retry/rate-limiting, SQLite for scheduling, and AES-256-GCM encryption for token storage. All dependencies are wired manually at startup with no framework.
+**TL;DR:** The AmplifyrMCP is a bridge between Claude Desktop and the LinkedIn, Medium, and Telegram APIs. It uses the MCP SDK for protocol handling, axios for HTTP with retry/rate-limiting, SQLite for scheduling, and AES-256-GCM encryption for token storage. All dependencies are wired manually at startup with no framework.
 
 **Prerequisite knowledge:** Familiarity with client-server architecture, REST APIs, and OAuth 2.0 concepts. Understanding of the MCP (Model Context Protocol) is helpful but not required -- see [Getting Started](Getting-Started) for an introduction.
 
@@ -17,7 +17,7 @@ audience: L1-L5
 
 ```mermaid
 graph TB
-    CD[Claude Desktop] -->|MCP Protocol<br/>JSON-RPC over stdio| MCP[LinkedIn MCP Server]
+    CD[Claude Desktop] -->|MCP Protocol<br/>JSON-RPC over stdio| MCP[AmplifyrMCP]
     RC[Remote Client] -->|MCP Protocol<br/>JSON-RPC over SSE/HTTP| MCP
 
     MCP -->|HTTPS REST| LI[LinkedIn API<br/>api.linkedin.com]

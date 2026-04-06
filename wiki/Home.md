@@ -1,11 +1,11 @@
 ---
-title: LinkedIn MCP Server Wiki
+title: AmplifyrMCP Wiki
 sidebar_label: Home
 sidebar_position: 0
 audience: L1-L5
 ---
 
-# LinkedIn MCP Server Wiki
+# AmplifyrMCP Wiki
 
 An MCP server that connects Claude Desktop to LinkedIn, Medium, and Telegram through natural language.
 
@@ -17,7 +17,7 @@ An MCP server that connects Claude Desktop to LinkedIn, Medium, and Telegram thr
 
 ## What This Server Does
 
-The LinkedIn MCP Server turns Claude Desktop into a LinkedIn content management tool. Once connected, you can:
+The AmplifyrMCP turns Claude Desktop into a LinkedIn content management tool. Once connected, you can:
 
 - Create text posts on your LinkedIn feed with hashtags and visibility controls
 - Publish articles with titles, descriptions, and cover images
@@ -30,7 +30,7 @@ The LinkedIn MCP Server turns Claude Desktop into a LinkedIn content management 
 All interactions happen through natural language in Claude Desktop. No command-line usage required after initial setup.
 
 ```
-You (Claude Desktop) --> Claude AI --> MCP Protocol --> LinkedIn MCP Server --> LinkedIn API
+You (Claude Desktop) --> Claude AI --> MCP Protocol --> AmplifyrMCP --> LinkedIn API
                                                                 |           --> Medium API
                                                                 |           --> Telegram Bot API
 ```
@@ -78,7 +78,7 @@ You (Claude Desktop) --> Claude AI --> MCP Protocol --> LinkedIn MCP Server --> 
 
 ## Key Takeaways
 
-- This wiki covers setup, usage, architecture, and troubleshooting for the LinkedIn MCP Server.
+- This wiki covers setup, usage, architecture, and troubleshooting for the AmplifyrMCP.
 - Start with [Concepts](Concepts) if you are new to MCP, then follow [Installation](Installation) and [Quick-Start-Guide](Quick-Start-Guide).
 - The [Tools-Reference](Tools-Reference) is the definitive guide to what you can ask Claude to do once the server is running.
 

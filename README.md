@@ -1,11 +1,11 @@
-# LinkedIn MCP Server
+# AmplifyrMCP
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4+-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
 
-An MCP server that connects Claude Desktop to **LinkedIn**, **Medium**, and **Telegram**. Post to LinkedIn, publish Medium articles, schedule content, and get Telegram notifications -- all through natural language.
+Amplify your content reach. An MCP server that connects Claude Desktop to **LinkedIn**, **Medium**, and **Telegram**. Post to LinkedIn, publish Medium articles, schedule content, and get Telegram notifications -- all through natural language.
 
 **Author:** Gurpreet Singh ([linkedin.com/in/gurpreettsengh](https://linkedin.com/in/gurpreettsengh))
 
@@ -52,8 +52,8 @@ An MCP server that connects Claude Desktop to **LinkedIn**, **Medium**, and **Te
 ### 1. Clone and Build
 
 ```bash
-git clone https://github.com/supersaiyane/linkedinMCP.git
-cd linkedinMCP
+git clone https://github.com/supersaiyane/AmplifyrMCP.git
+cd AmplifyrMCP
 npm install
 npm run build
 ```
@@ -93,7 +93,7 @@ Edit your Claude Desktop config:
   "mcpServers": {
     "linkedin": {
       "command": "node",
-      "args": ["/absolute/path/to/linkedinMCP/dist/index.js"],
+      "args": ["/absolute/path/to/AmplifyrMCP/dist/index.js"],
       "env": {
         "LINKEDIN_CLIENT_ID": "your_client_id",
         "LINKEDIN_CLIENT_SECRET": "your_client_secret",

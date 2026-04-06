@@ -1,5 +1,5 @@
 services:
-  linkedin-mcp:
+  amplifyr-mcp:
     build: .
     ports:
       - "3001:3001"

@@ -56,14 +56,14 @@ This is the standard installation for local development and Claude Desktop integ
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/supersaiyane/linkedinMCP.git
-cd linkedinMCP
+git clone https://github.com/supersaiyane/AmplifyrMCP.git
+cd AmplifyrMCP
 ```
 
 Expected output:
 
 ```
-Cloning into 'linkedinMCP'...
+Cloning into 'AmplifyrMCP'...
 remote: Enumerating objects: ...
 remote: Counting objects: 100% ...
 Receiving objects: 100% ...
@@ -137,14 +137,14 @@ Use Docker if you prefer container isolation or plan to run the server on a remo
 ### Step 1: Build the image
 
 ```bash
-docker build -t linkedin-mcp-server .
+docker build -t amplifyr-mcp .
 ```
 
 Expected output (final lines):
 
 ```
  => exporting to image
- => => naming to docker.io/library/linkedin-mcp-server
+ => => naming to docker.io/library/amplifyr-mcp
 ```
 
 ### Step 2: Create an environment file
@@ -160,7 +160,7 @@ Edit `.env` and fill in your LinkedIn credentials (see [Quick-Start-Guide](Quick
 For SSE transport (remote clients):
 
 ```bash
-docker run --env-file .env -p 3001:3001 linkedin-mcp-server
+docker run --env-file .env -p 3001:3001 amplifyr-mcp
 ```
 
 Expected output:
@@ -178,14 +178,14 @@ docker compose up
 ### Step 4: Verify the container
 
 ```bash
-docker ps --filter name=linkedin-mcp
+docker ps --filter name=amplifyr-mcp
 ```
 
 Expected output:
 
 ```
 CONTAINER ID   IMAGE                   STATUS         PORTS
-abc123def456   linkedin-mcp-server     Up 2 seconds   0.0.0.0:3001->3001/tcp
+abc123def456   amplifyr-mcp     Up 2 seconds   0.0.0.0:3001->3001/tcp
 ```
 
 ### Volume persistence

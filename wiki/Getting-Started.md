@@ -14,8 +14,8 @@ This guide walks you through setting up the LinkedIn MCP server from scratch. No
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/supersaiyane/linkedinMCP.git
-cd linkedinMCP
+git clone https://github.com/supersaiyane/AmplifyrMCP.git
+cd AmplifyrMCP
 ```
 
 ## Step 2: Install Dependencies
@@ -69,7 +69,7 @@ Add this to the `mcpServers` section:
   "mcpServers": {
     "linkedin": {
       "command": "node",
-      "args": ["/full/path/to/linkedinMCP/dist/index.js"],
+      "args": ["/full/path/to/AmplifyrMCP/dist/index.js"],
       "env": {
         "LINKEDIN_CLIENT_ID": "your_client_id",
         "LINKEDIN_CLIENT_SECRET": "your_client_secret",
@@ -80,7 +80,7 @@ Add this to the `mcpServers` section:
 }
 ```
 
-**Important:** Replace `/full/path/to/linkedinMCP` with the actual absolute path to your cloned repo.
+**Important:** Replace `/full/path/to/AmplifyrMCP` with the actual absolute path to your cloned repo.
 
 **Note:** You can put credentials either in the `.env` file OR in the Claude Desktop config `env` block. Either works. The Claude Desktop config approach keeps secrets out of the project directory entirely.
 

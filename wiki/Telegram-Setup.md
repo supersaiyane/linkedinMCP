@@ -99,7 +99,7 @@ Or in the Claude Desktop config (`claude_desktop_config.json`):
   "mcpServers": {
     "linkedin": {
       "command": "node",
-      "args": ["/path/to/linkedin-mcp-server/dist/index.js"],
+      "args": ["/path/to/amplifyr-mcp/dist/index.js"],
       "env": {
         "LINKEDIN_CLIENT_ID": "<LINKEDIN_CLIENT_ID>",
         "LINKEDIN_CLIENT_SECRET": "<LINKEDIN_CLIENT_SECRET>",

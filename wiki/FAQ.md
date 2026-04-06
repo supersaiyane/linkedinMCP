@@ -7,7 +7,7 @@ audience: L1-L5
 
 # Frequently Asked Questions
 
-**TL;DR** -- Answers to the most common questions about the LinkedIn MCP Server, organized by audience level. For step-by-step fixes to specific errors, see the [Troubleshooting](Troubleshooting) page instead.
+**TL;DR** -- Answers to the most common questions about the AmplifyrMCP, organized by audience level. For step-by-step fixes to specific errors, see the [Troubleshooting](Troubleshooting) page instead.
 
 ---
 
@@ -114,8 +114,8 @@ Yes. Set `MCP_TRANSPORT=sse` and `SSE_PORT=3001` to expose the server over HTTP 
 Yes. The project includes a multi-stage Dockerfile. Docker defaults to SSE transport.
 
 ```bash
-docker build -t linkedin-mcp-server .
-docker run --env-file .env -p 3001:3001 linkedin-mcp-server
+docker build -t amplifyr-mcp .
+docker run --env-file .env -p 3001:3001 amplifyr-mcp
 ```
 
 See [Getting-Started](Getting-Started) for Docker setup details.

@@ -1,4 +1,4 @@
-# CLAUDE.md — LinkedIn MCP Server
+# CLAUDE.md — AmplifyrMCP
 
 > **This file is the single source of truth for building this project.**
 > Claude Code: read this entire file before writing any code. Follow it precisely.
@@ -7,7 +7,7 @@
 
 ## PROJECT IDENTITY
 
-- **Name:** `linkedin-mcp-server`
+- **Name:** `amplifyr-mcp`
 - **Purpose:** MCP server that authenticates with LinkedIn OAuth 2.0 and exposes tools for posting text updates, publishing long-form articles, uploading media, reading profile data, and scheduling posts for future publication.
 - **Author:** Gurpreet Singh (linkedin.com/in/gurpreettsengh)
 - **Runtime:** Node.js 20+ with TypeScript 5.4+
@@ -71,7 +71,7 @@
 ## PROJECT STRUCTURE
 
 ```
-linkedin-mcp-server/
+amplifyr-mcp/
 ├── CLAUDE.md                          # THIS FILE — agent memory
 ├── README.md                          # User-facing docs
 ├── package.json
@@ -196,7 +196,7 @@ linkedin-mcp-server/
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // This class:
-// 1. Creates McpServer instance with name "linkedin-mcp" and version from package.json
+// 1. Creates McpServer instance with name "amplifyr-mcp" and version from package.json
 // 2. Registers all tools via server.tool() calls
 // 3. Each tool registration includes: name, description, zod schema, handler function
 // 4. Handler functions delegate to the appropriate service/tool module
@@ -221,7 +221,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 // The SDK handles the conversion internally.
 
 // Server metadata:
-// - name: "linkedin-mcp"
+// - name: "amplifyr-mcp"
 // - version: read from package.json
 // - capabilities: { tools: {} }
 ```
@@ -1132,7 +1132,7 @@ export class TokenStoreError extends LinkedInMCPError {
 //   - level: from env LOG_LEVEL
 //   - transport: for stdio MCP, log to stderr (stdout is for MCP protocol)
 //                for SSE, log to stdout is fine
-//   - base: { service: "linkedin-mcp", version: "1.0.0" }
+//   - base: { service: "amplifyr-mcp", version: "1.0.0" }
 //   - timestamp: pino.stdTimeFunctions.isoTime
 //
 // CRITICAL: When using stdio transport, ALL logs MUST go to stderr.
@@ -1263,10 +1263,10 @@ clean:
 	rm -rf dist/ node_modules/
 
 docker-build:
-	docker build -t linkedin-mcp-server .
+	docker build -t amplifyr-mcp .
 
 docker-run:
-	docker run --env-file .env -p 3001:3001 linkedin-mcp-server
+	docker run --env-file .env -p 3001:3001 amplifyr-mcp
 
 # Pre-commit check — run before any commit
 check: typecheck lint test
@@ -1301,11 +1301,11 @@ check: typecheck lint test
 
 ```json
 {
-  "name": "linkedin-mcp-server",
+  "name": "amplifyr-mcp",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
-  "bin": { "linkedin-mcp": "dist/index.js" },
+  "bin": { "amplifyr-mcp": "dist/index.js" },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
@@ -1350,7 +1350,7 @@ CMD ["node", "dist/index.js"]
   "mcpServers": {
     "linkedin": {
       "command": "node",
-      "args": ["/absolute/path/to/linkedin-mcp-server/dist/index.js"],
+      "args": ["/absolute/path/to/amplifyr-mcp/dist/index.js"],
       "env": {
         "LINKEDIN_CLIENT_ID": "your_client_id",
         "LINKEDIN_CLIENT_SECRET": "your_client_secret",

@@ -7,7 +7,7 @@ audience: L2-L4
 
 # Docker Deployment
 
-How to build, configure, and run the LinkedIn MCP Server in a Docker container.
+How to build, configure, and run the AmplifyrMCP in a Docker container.
 
 **TL;DR:** The server ships with a multi-stage Dockerfile that produces a slim production image. Use `docker compose up` with an `.env` file and a volume mount for persistent data. Docker deployments use SSE transport (not stdio).
 
@@ -72,7 +72,7 @@ The final image contains no TypeScript source, no devDependencies, and no build 
 version: "3.8"
 
 services:
-  linkedin-mcp:
+  amplifyr-mcp:
     build: .
     ports:
       - "3001:3001"
@@ -128,7 +128,7 @@ Expected output:
 
 ```text
 [+] Running 1/1
- ✔ Container linkedin-mcp-linkedin-mcp-1  Started
+ ✔ Container amplifyr-mcp-amplifyr-mcp-1  Started
 ```
 
 ### Verify it is running
@@ -140,7 +140,7 @@ docker compose logs -f
 Expected output:
 
 ```json
-{"level":"info","service":"linkedin-mcp","msg":"Server started","transport":"sse","port":3001}
+{"level":"info","service":"amplifyr-mcp","msg":"Server started","transport":"sse","port":3001}
 ```
 
 Press `Ctrl+C` to stop tailing logs.
@@ -217,7 +217,7 @@ The `docker-compose.yml` above uses a named volume (`mcp-data`). Docker manages 
 To inspect the volume:
 
 ```bash
-docker volume inspect linkedin-mcp_mcp-data
+docker volume inspect amplifyr-mcp_mcp-data
 ```
 
 ### Bind mount (alternative)
@@ -239,14 +239,14 @@ chmod 700 data
 ### Backing up the volume
 
 ```bash
-docker run --rm -v linkedin-mcp_mcp-data:/data -v $(pwd):/backup \
+docker run --rm -v amplifyr-mcp_mcp-data:/data -v $(pwd):/backup \
   alpine tar czf /backup/mcp-data-backup.tar.gz -C /data .
 ```
 
 ### Restoring from backup
 
 ```bash
-docker run --rm -v linkedin-mcp_mcp-data:/data -v $(pwd):/backup \
+docker run --rm -v amplifyr-mcp_mcp-data:/data -v $(pwd):/backup \
   alpine tar xzf /backup/mcp-data-backup.tar.gz -C /data
 ```
 
@@ -299,7 +299,7 @@ The default `docker-compose.yml` does not include a health check. To add one, ex
 
 ```yaml
 services:
-  linkedin-mcp:
+  amplifyr-mcp:
     # ... existing config ...
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3001/sse').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
@@ -319,7 +319,7 @@ docker compose ps
 
 ```text
 NAME                           STATUS
-linkedin-mcp-linkedin-mcp-1   Up 5 minutes (healthy)
+amplifyr-mcp-amplifyr-mcp-1   Up 5 minutes (healthy)
 ```
 
 ---

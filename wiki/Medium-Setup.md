@@ -31,7 +31,7 @@ Medium integration is optional. If the `MEDIUM_INTEGRATION_TOKEN` environment va
 
 1. Go to [medium.com/me/settings/security](https://medium.com/me/settings/security)
 2. Scroll down to the **"Integration tokens"** section
-3. Enter a description in the text field (e.g., `LinkedIn MCP Server`)
+3. Enter a description in the text field (e.g., `AmplifyrMCP`)
 4. Click **"Get integration token"**
 5. Copy the generated token
 
@@ -52,7 +52,7 @@ Or in the Claude Desktop config (`claude_desktop_config.json`):
   "mcpServers": {
     "linkedin": {
       "command": "node",
-      "args": ["/path/to/linkedin-mcp-server/dist/index.js"],
+      "args": ["/path/to/amplifyr-mcp/dist/index.js"],
       "env": {
         "LINKEDIN_CLIENT_ID": "<LINKEDIN_CLIENT_ID>",
         "LINKEDIN_CLIENT_SECRET": "<LINKEDIN_CLIENT_SECRET>",

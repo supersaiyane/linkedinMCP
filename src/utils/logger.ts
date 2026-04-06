@@ -6,7 +6,7 @@ export function createLogger(level: string, transport: string): Logger {
 
   return pino({
     level,
-    base: { service: "linkedin-mcp", version: "1.0.0" },
+    base: { service: "amplifyr-mcp", version: "1.0.0" },
     timestamp: pino.stdTimeFunctions.isoTime,
     transport: {
       target: "pino/file",

@@ -89,7 +89,7 @@ Add the following entry inside the `mcpServers` object. If the file does not exi
 
 Replace the three placeholder values:
 
-- `<ABSOLUTE_PATH_TO_PROJECT>` -- The full path to your cloned repository (e.g., `/Users/you/linkedinMCP` or `C:\Users\you\linkedinMCP`)
+- `<ABSOLUTE_PATH_TO_PROJECT>` -- The full path to your cloned repository (e.g., `/Users/you/AmplifyrMCP` or `C:\Users\you\AmplifyrMCP`)
 - `<YOUR_LINKEDIN_CLIENT_ID>` -- Same value as in your `.env` file
 - `<YOUR_LINKEDIN_CLIENT_SECRET>` -- Same value as in your `.env` file
 - `<ANY_STRING_AT_LEAST_32_CHARACTERS>` -- Any string of 32 or more characters used to encrypt stored tokens (e.g., `my-super-secret-encryption-key-2024!!`)
@@ -163,7 +163,7 @@ You will not need to repeat this step. Tokens are encrypted and stored locally a
 In the same Claude Desktop chat (or a new one), type:
 
 ```
-Create a LinkedIn post: Hello from MCP! This is my first automated post using the LinkedIn MCP Server.
+Create a LinkedIn post: Hello from MCP! This is my first automated post using the AmplifyrMCP.
 ```
 
 Expected result:

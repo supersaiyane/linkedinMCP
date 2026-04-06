@@ -7,7 +7,7 @@ audience: L1-L3
 
 # Concepts
 
-**TL;DR:** The LinkedIn MCP Server acts as a bridge between Claude Desktop and external services (LinkedIn, Medium, Telegram). It uses the Model Context Protocol to expose tools that Claude can call on your behalf, handling OAuth authentication, content formatting, rate limiting, and post scheduling behind the scenes.
+**TL;DR:** The AmplifyrMCP acts as a bridge between Claude Desktop and external services (LinkedIn, Medium, Telegram). It uses the Model Context Protocol to expose tools that Claude can call on your behalf, handling OAuth authentication, content formatting, rate limiting, and post scheduling behind the scenes.
 
 **Prerequisite knowledge:** Basic familiarity with using Claude Desktop. No programming experience required.
 

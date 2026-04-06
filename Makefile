@@ -28,10 +28,10 @@ clean:
 	rm -rf dist/ node_modules/
 
 docker-build:
-	docker build -t linkedin-mcp-server .
+	docker build -t amplifyr-mcp .
 
 docker-run:
-	docker run --env-file .env -p 3001:3001 linkedin-mcp-server
+	docker run --env-file .env -p 3001:3001 amplifyr-mcp
 
 check: typecheck test
 	@echo "All checks passed"

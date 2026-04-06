@@ -1,11 +1,11 @@
 {
-  "name": "linkedin-mcp-server",
+  "name": "amplifyr-mcp",
   "version": "1.0.0",
-  "description": "MCP server for LinkedIn OAuth 2.0 authentication and content publishing",
+  "description": "Amplify your content reach. MCP server connecting Claude Desktop to LinkedIn, Medium, and Telegram.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "linkedin-mcp": "dist/index.js"
+    "amplifyr-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
