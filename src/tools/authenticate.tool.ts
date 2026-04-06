@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Logger } from "pino";
 import type { AuthManager } from "../auth/auth-manager.js";
 import type { LinkedInAPIClient } from "../api/linkedin-client.js";
+import type { TelegramNotifier } from "../services/telegram-notifier.js";
 
 export const authenticateSchema = {};
 
@@ -10,11 +11,12 @@ export async function authenticateHandler(
   deps: {
     authManager: AuthManager;
     apiClient: LinkedInAPIClient;
+    notifier: TelegramNotifier | null;
     openBrowser: (url: string) => Promise<void>;
     logger: Logger;
   },
 ) {
-  const { authManager, apiClient, openBrowser, logger } = deps;
+  const { authManager, apiClient, notifier, openBrowser, logger } = deps;
 
   if (await authManager.isAuthenticated()) {
     try {
@@ -37,6 +39,8 @@ export async function authenticateHandler(
   await authManager.authenticate(openBrowser);
 
   const profile = await apiClient.getUserProfile();
+
+  await notifier?.notifyAuthenticated(profile.name);
 
   return {
     content: [

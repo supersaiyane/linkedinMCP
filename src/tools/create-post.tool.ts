@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Logger } from "pino";
 import type { LinkedInAPIClient } from "../api/linkedin-client.js";
 import type { ContentFormatter } from "../services/content-formatter.js";
+import type { TelegramNotifier } from "../services/telegram-notifier.js";
 
 export const createPostSchema = {
   text: z
@@ -24,10 +25,11 @@ export async function createPostHandler(
   deps: {
     apiClient: LinkedInAPIClient;
     contentFormatter: ContentFormatter;
+    notifier: TelegramNotifier | null;
     logger: Logger;
   },
 ) {
-  const { apiClient, contentFormatter, logger } = deps;
+  const { apiClient, contentFormatter, notifier, logger } = deps;
 
   const content = contentFormatter.formatPost(args.text, args.hashtags);
 
@@ -51,6 +53,8 @@ export async function createPostHandler(
   });
 
   logger.info({ postUrn: result.urn }, "Post created successfully");
+
+  await notifier?.notifyPostPublished(result.url, args.text);
 
   return {
     content: [

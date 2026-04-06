@@ -27,6 +27,13 @@ const EnvSchema = z.object({
 
   RATE_LIMIT_POSTS_PER_DAY: z.coerce.number().default(100),
   RATE_LIMIT_API_PER_MINUTE: z.coerce.number().default(150),
+
+  // Telegram notifications (optional)
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_CHAT_ID: z.string().optional(),
+
+  // Medium integration (optional)
+  MEDIUM_INTEGRATION_TOKEN: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof EnvSchema>;

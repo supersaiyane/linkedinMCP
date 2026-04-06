@@ -14,6 +14,8 @@ import { LinkedInAPIClient } from "./api/linkedin-client.js";
 import { ContentFormatter } from "./services/content-formatter.js";
 import { MediaHandler } from "./services/media-handler.js";
 import { PostScheduler } from "./services/post-scheduler.js";
+import { TelegramNotifier } from "./services/telegram-notifier.js";
+import { MediumClient } from "./api/medium-client.js";
 import { LinkedInMCPServer } from "./server.js";
 import type { TokenStore } from "./auth/token-store.js";
 
@@ -61,13 +63,32 @@ async function main(): Promise<void> {
     scheduler.start();
   }
 
+  // Telegram notifications (optional)
+  let notifier: TelegramNotifier | null = null;
+  if (config.TELEGRAM_BOT_TOKEN && config.TELEGRAM_CHAT_ID) {
+    notifier = new TelegramNotifier(config.TELEGRAM_BOT_TOKEN, config.TELEGRAM_CHAT_ID, logger);
+    logger.info("Telegram notifications enabled");
+    if (scheduler) {
+      scheduler.setNotifier(notifier);
+    }
+  }
+
+  // Medium client (optional)
+  let mediumClient: MediumClient | null = null;
+  if (config.MEDIUM_INTEGRATION_TOKEN) {
+    mediumClient = new MediumClient(config.MEDIUM_INTEGRATION_TOKEN, logger);
+    logger.info("Medium integration enabled");
+  }
+
   // Server
   const mcpServer = new LinkedInMCPServer({
     authManager,
     apiClient,
+    mediumClient,
     contentFormatter,
     mediaHandler,
     scheduler,
+    notifier,
     openBrowser: async (url: string) => {
       await open(url);
     },

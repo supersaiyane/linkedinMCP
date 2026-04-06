@@ -3,6 +3,7 @@ import type { Logger } from "pino";
 import type { LinkedInAPIClient } from "../api/linkedin-client.js";
 import type { ContentFormatter } from "../services/content-formatter.js";
 import type { MediaHandler } from "../services/media-handler.js";
+import type { TelegramNotifier } from "../services/telegram-notifier.js";
 
 export const publishArticleSchema = {
   title: z.string().min(1).max(200),
@@ -18,10 +19,11 @@ export async function publishArticleHandler(
     apiClient: LinkedInAPIClient;
     contentFormatter: ContentFormatter;
     mediaHandler: MediaHandler;
+    notifier: TelegramNotifier | null;
     logger: Logger;
   },
 ) {
-  const { apiClient, contentFormatter, mediaHandler, logger } = deps;
+  const { apiClient, contentFormatter, mediaHandler, notifier, logger } = deps;
 
   const validation = contentFormatter.validateArticle({
     title: args.title,
@@ -64,6 +66,8 @@ export async function publishArticleHandler(
   });
 
   logger.info({ postUrn: result.urn }, "Article published");
+
+  await notifier?.notifyArticlePublished(args.title, result.url);
 
   return {
     content: [

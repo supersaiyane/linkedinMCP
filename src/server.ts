@@ -2,9 +2,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Logger } from "pino";
 import type { AuthManager } from "./auth/auth-manager.js";
 import type { LinkedInAPIClient } from "./api/linkedin-client.js";
+import type { MediumClient } from "./api/medium-client.js";
 import type { ContentFormatter } from "./services/content-formatter.js";
 import type { MediaHandler } from "./services/media-handler.js";
 import type { PostScheduler } from "./services/post-scheduler.js";
+import type { TelegramNotifier } from "./services/telegram-notifier.js";
 import {
   authenticateSchema,
   authenticateHandler,
@@ -20,15 +22,21 @@ import {
   schedulePostHandler,
   listScheduledSchema,
   listScheduledHandler,
+  mediumPublishSchema,
+  mediumPublishHandler,
+  mediumProfileSchema,
+  mediumProfileHandler,
 } from "./tools/index.js";
 import { LinkedInMCPError } from "./models/errors.js";
 
 interface ServerDeps {
   authManager: AuthManager;
   apiClient: LinkedInAPIClient;
+  mediumClient: MediumClient | null;
   contentFormatter: ContentFormatter;
   mediaHandler: MediaHandler;
   scheduler: PostScheduler | null;
+  notifier: TelegramNotifier | null;
   openBrowser: (url: string) => Promise<void>;
   logger: Logger;
 }
@@ -64,7 +72,7 @@ export class LinkedInMCPServer {
   }
 
   private registerTools(): void {
-    const { authManager, apiClient, contentFormatter, mediaHandler, scheduler, openBrowser, logger } = this.deps;
+    const { authManager, apiClient, mediumClient, contentFormatter, mediaHandler, scheduler, notifier, openBrowser, logger } = this.deps;
 
     this.server.tool(
       "linkedin_authenticate",
@@ -72,7 +80,7 @@ export class LinkedInMCPServer {
       authenticateSchema,
       async (args): Promise<ToolResult> => {
         try {
-          return await authenticateHandler(args, { authManager, apiClient, openBrowser, logger }) as ToolResult;
+          return await authenticateHandler(args, { authManager, apiClient, notifier, openBrowser, logger }) as ToolResult;
         } catch (err) {
           return makeErrorResult(err);
         }
@@ -85,7 +93,7 @@ export class LinkedInMCPServer {
       createPostSchema,
       async (args): Promise<ToolResult> => {
         try {
-          return await createPostHandler(args, { apiClient, contentFormatter, logger }) as ToolResult;
+          return await createPostHandler(args, { apiClient, contentFormatter, notifier, logger }) as ToolResult;
         } catch (err) {
           return makeErrorResult(err);
         }
@@ -98,7 +106,7 @@ export class LinkedInMCPServer {
       publishArticleSchema,
       async (args): Promise<ToolResult> => {
         try {
-          return await publishArticleHandler(args, { apiClient, contentFormatter, mediaHandler, logger }) as ToolResult;
+          return await publishArticleHandler(args, { apiClient, contentFormatter, mediaHandler, notifier, logger }) as ToolResult;
         } catch (err) {
           return makeErrorResult(err);
         }
@@ -152,6 +160,34 @@ export class LinkedInMCPServer {
         async (args): Promise<ToolResult> => {
           try {
             return await listScheduledHandler(args, { scheduler, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
+    }
+
+    if (mediumClient) {
+      this.server.tool(
+        "medium_publish_article",
+        "Publish an article on Medium. Supports markdown and HTML content, tags, and draft/public/unlisted status.",
+        mediumPublishSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await mediumPublishHandler(args, { mediumClient, notifier, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
+
+      this.server.tool(
+        "medium_get_profile",
+        "Get the authenticated Medium user profile.",
+        mediumProfileSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await mediumProfileHandler(args, { mediumClient, logger }) as ToolResult;
           } catch (err) {
             return makeErrorResult(err);
           }

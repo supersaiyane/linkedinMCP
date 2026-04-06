@@ -4,6 +4,7 @@ import Database from "better-sqlite3";
 import { Cron } from "croner";
 import type { Logger } from "pino";
 import type { LinkedInAPIClient } from "../api/linkedin-client.js";
+import type { TelegramNotifier } from "./telegram-notifier.js";
 import type { ScheduledPost } from "../models/types.js";
 import { SchedulerError, PastDateError } from "../models/errors.js";
 import { generateId } from "../utils/id.js";
@@ -39,6 +40,8 @@ export class PostScheduler {
   private db: Database.Database;
   private cron: Cron | null = null;
 
+  private notifier: TelegramNotifier | null = null;
+
   constructor(
     private dbPath: string,
     private apiClient: LinkedInAPIClient,
@@ -48,6 +51,10 @@ export class PostScheduler {
     this.db = new Database(dbPath);
     this.db.exec(CREATE_TABLE_SQL);
     this.db.exec(CREATE_INDEX_SQL);
+  }
+
+  setNotifier(notifier: TelegramNotifier): void {
+    this.notifier = notifier;
   }
 
   schedule(input: ScheduleInput): ScheduledPost {
@@ -122,6 +129,7 @@ export class PostScheduler {
           .run(result.url, result.urn, id);
 
         this.logger.info({ id, urn: result.urn }, "Scheduled post published");
+        await this.notifier?.notifyScheduledPostPublished(result.url, content.text ?? "Scheduled post");
       } catch (err) {
         const attemptCount = ((row.attempt_count as number) ?? 0) + 1;
         const message = err instanceof Error ? err.message : String(err);
@@ -136,6 +144,7 @@ export class PostScheduler {
               `UPDATE scheduled_posts SET status = 'FAILED', error_message = ? WHERE id = ?`,
             )
             .run(message, id);
+          await this.notifier?.notifyScheduledPostFailed(id, message);
         }
 
         this.logger.error({ id, error: message }, "Failed to publish scheduled post");
