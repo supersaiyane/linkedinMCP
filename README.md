@@ -4,8 +4,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4+-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
+[![Tests](https://img.shields.io/badge/Tests-41%20passing-brightgreen.svg)](#testing)
 
-Amplify your content reach. An MCP server that connects Claude Desktop to **LinkedIn**, **Medium**, and **Telegram**. Post to LinkedIn, publish Medium articles, schedule content, and get Telegram notifications -- all through natural language.
+Amplify your content reach. An MCP server that connects Claude Desktop to **LinkedIn**, **Medium**, and **Telegram**. Manage your entire professional presence through natural language -- post, schedule, engage, analyze, and publish articles, all without leaving your AI assistant.
 
 **Author:** Gurpreet Singh ([linkedin.com/in/gurpreettsengh](https://linkedin.com/in/gurpreettsengh))
 
@@ -20,17 +21,23 @@ AmplifyrMCP is a **bridge** between Claude (the AI assistant) and your social me
 ```
 You:    "Post on LinkedIn: Just shipped v2.0 of our API. Feedback welcome!"
 Claude: Uses linkedin_create_post tool → post appears on your LinkedIn feed
-You:    "Schedule a post for tomorrow 9am about our new feature"
-Claude: Uses linkedin_schedule_post tool → post queued, publishes automatically at 9am
+
+You:    "Show me the stats on my last post"
+Claude: Uses linkedin_get_post_stats → Impressions: 1250, Likes: 42, Comments: 8
+
+You:    "Reply to the first comment with 'Thanks for the feedback!'"
+Claude: Uses linkedin_reply_to_comment → reply posted
 ```
 
 Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) -- a standard that lets AI assistants like Claude call external tools. Think of it as giving Claude "hands" to interact with LinkedIn on your behalf.
 
 ---
 
-## Features — What's Built and Working
+## All 19 Tools
 
-### 1. LinkedIn Authentication (`linkedin_authenticate`)
+### LinkedIn — Content Creation (4 tools)
+
+#### 1. Authenticate (`linkedin_authenticate`)
 
 **What it does:** Connects your LinkedIn account to Claude using OAuth 2.0 (the same secure login flow used by "Sign in with Google/LinkedIn" buttons).
 
@@ -45,7 +52,7 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 2. Create LinkedIn Post (`linkedin_create_post`)
+#### 2. Create Post (`linkedin_create_post`)
 
 **What it does:** Publishes a text post to your LinkedIn personal feed.
 
@@ -69,18 +76,28 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 3. Publish Article (`linkedin_publish_article`)
+#### 3. Create Post with Image (`linkedin_create_post_with_image`)
+
+**What it does:** Uploads an image and creates a post with it attached -- all in one step. No need to upload the image separately first.
+
+**Features:**
+- Supports JPEG, PNG, GIF (max 8MB)
+- Text + image + hashtags in one command
+- Two-step upload handled automatically (initialize → upload binary → create post)
+
+**Example prompts:**
+```
+"Post on LinkedIn with image ~/Desktop/infographic.png: Check out our Q1 results!"
+"Create a post with image ~/Photos/team.jpg about our hackathon, add hashtags hackathon, teamwork"
+```
+
+---
+
+#### 4. Publish Article (`linkedin_publish_article`)
 
 **What it does:** Shares an article URL as a rich LinkedIn post with title, description, and optional cover image.
 
 **Important:** LinkedIn's API requires a source URL for articles. This creates an article-style post that links to your content (blog, Medium article, etc.), not a native LinkedIn article.
-
-**Features:**
-- Title (max 200 characters)
-- Article body/description
-- Source URL (required -- the link to your article)
-- Optional cover image (upload a local jpg/png/gif, max 8MB)
-- Visibility control
 
 **Example prompts:**
 ```
@@ -90,16 +107,37 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 4. Upload Media (`linkedin_upload_media`)
+### LinkedIn — Post Management (3 tools)
 
-**What it does:** Uploads an image to LinkedIn and returns a URN (a unique identifier) that you can use when creating posts with images.
+#### 5. Edit Post (`linkedin_edit_post`)
+
+**What it does:** Updates the text of an existing LinkedIn post. Useful for fixing typos, adding context, or updating information after publishing.
+
+**Input:** The post URN (returned when you create a post) and the new text.
+
+**Example:**
+```
+"Edit my post urn:li:share:12345 to say: Updated: We're now hiring for 3 roles, not 2."
+```
+
+---
+
+#### 6. Delete Post (`linkedin_delete_post`)
+
+**What it does:** Permanently removes a LinkedIn post from your feed. This cannot be undone.
+
+**Example:**
+```
+"Delete my LinkedIn post urn:li:share:12345"
+```
+
+---
+
+#### 7. Upload Media (`linkedin_upload_media`)
+
+**What it does:** Uploads an image to LinkedIn and returns a URN (a unique identifier) that you can reference when creating posts. This is the manual two-step approach -- most users should use `create_post_with_image` instead.
 
 **Supported formats:** JPEG, PNG, GIF (max 8MB)
-
-**How the two-step image process works:**
-1. AmplifyrMCP asks LinkedIn "I want to upload an image" → LinkedIn returns an upload URL
-2. AmplifyrMCP sends the actual image binary to that URL → LinkedIn returns an image URN
-3. You use that URN when creating a post with an image attached
 
 **Example:**
 ```
@@ -109,13 +147,61 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 5. Get Profile (`linkedin_get_profile`)
+### LinkedIn — Engagement (3 tools)
+
+#### 8. Like Post (`linkedin_like_post`)
+
+**What it does:** Likes a LinkedIn post. You can like your own posts or other people's posts.
+
+**Example:**
+```
+"Like the post urn:li:share:12345"
+```
+
+---
+
+#### 9. Get Comments (`linkedin_get_comments`)
+
+**What it does:** Fetches all comments on a specific post. Returns each comment's author, text, timestamp, and comment URN (needed for replying).
+
+**Features:**
+- Configurable count (1-100 comments, default 20)
+- Returns comment URNs for use with `reply_to_comment`
+
+**Example:**
+```
+"Show me comments on my post urn:li:share:12345"
+→ 1. [2026-04-10T08:15:00Z] urn:li:person:abc
+   "Great post! Really insightful."
+   URN: urn:li:comment:(urn:li:share:12345,456)
+```
+
+---
+
+#### 10. Reply to Comment (`linkedin_reply_to_comment`)
+
+**What it does:** Replies to a specific comment on your post. Useful for engaging with your audience without leaving Claude.
+
+**Workflow:** First use `get_comments` to see comments and their URNs, then reply to specific ones.
+
+**Example:**
+```
+"Show comments on urn:li:share:12345"
+→ (see comment URNs)
+
+"Reply to comment urn:li:comment:(urn:li:share:12345,456) with 'Thanks for reading! Glad you found it useful.'"
+→ Reply posted successfully!
+```
+
+---
+
+### LinkedIn — Analytics (4 tools)
+
+#### 11. Get Profile (`linkedin_get_profile`)
 
 **What it does:** Fetches your authenticated LinkedIn profile information.
 
 **Returns:** Your name, LinkedIn member URN (your unique ID), and profile picture URL.
-
-**Why it's useful:** The member URN is needed internally for every post (LinkedIn needs to know "who" is posting). This tool also helps verify that authentication is working.
 
 **Example:**
 ```
@@ -127,7 +213,68 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 6. Schedule Post (`linkedin_schedule_post`)
+#### 12. Get Profile Stats (`linkedin_get_profile_stats`)
+
+**What it does:** Fetches your profile-level statistics -- follower count, and where available, profile views and search appearances.
+
+**Example:**
+```
+"How many LinkedIn followers do I have?"
+→ Followers: 4,832
+```
+
+**Note:** Profile views and search appearances require additional API permissions that may not be available with all LinkedIn app configurations.
+
+---
+
+#### 13. Get Post Stats (`linkedin_get_post_stats`)
+
+**What it does:** Fetches detailed analytics for a specific post -- how many people saw it, engaged with it, and clicked through.
+
+**Returns:**
+- Impressions (how many times the post appeared in feeds)
+- Likes
+- Comments
+- Shares (how many people reposted it)
+- Clicks (link clicks, "see more" clicks, profile clicks)
+
+**Example:**
+```
+"Show me stats for my post urn:li:share:12345"
+→ 📊 Post Stats
+  👁️ Impressions: 1,250
+  👍 Likes: 42
+  💬 Comments: 8
+  🔄 Shares: 5
+  🖱️ Clicks: 73
+```
+
+---
+
+#### 14. Search Posts (`linkedin_search_posts`)
+
+**What it does:** Searches your own LinkedIn posts by keyword or hashtag. Useful for finding old posts to reference, reshare, or check stats on.
+
+**Features:**
+- Searches post text (commentary) for matching keywords
+- Configurable result count (1-50, default 10)
+- Returns post URNs for use with other tools (stats, edit, delete)
+
+**Example:**
+```
+"Search my LinkedIn posts for 'kubernetes'"
+→ 🔍 Search results for "kubernetes" (2)
+  1. [2026-04-01] Kubernetes is becoming invisible...
+     URN: urn:li:share:111
+  2. [2026-03-15] Our K8s migration taught me...
+     URN: urn:li:share:222
+```
+
+---
+
+### LinkedIn — Scheduling (3 tools)
+
+#### 15. Schedule Post (`linkedin_schedule_post`)
 
 **What it does:** Queues a post for future publication. The post is stored in a local SQLite database and automatically published when the scheduled time arrives.
 
@@ -142,20 +289,19 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 **Example:**
 ```
 "Schedule a LinkedIn post for tomorrow at 9am: Big announcement coming soon!"
-"Schedule a post for 2026-04-15T14:00:00Z about product launch with hashtags launch, startup"
 ```
 
 **Important:** The schedule uses your server's clock. Make sure your machine's timezone is correct.
 
 ---
 
-### 7. List Scheduled Posts (`linkedin_list_scheduled`)
+#### 16. List Scheduled Posts (`linkedin_list_scheduled`)
 
 **What it does:** Shows all posts in the scheduling queue with their current status.
 
 **Status values:**
 - `PENDING` — Waiting to be published at the scheduled time
-- `PUBLISHING` — Currently being sent to LinkedIn (usually just seconds)
+- `PUBLISHING` — Currently being sent to LinkedIn
 - `PUBLISHED` — Successfully posted, includes the LinkedIn URL
 - `FAILED` — Failed after 3 retry attempts, includes error message
 - `CANCELLED` — Manually cancelled before publication
@@ -168,13 +314,9 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 8. Cancel Scheduled Post (`linkedin_cancel_scheduled`)
+#### 17. Cancel Scheduled Post (`linkedin_cancel_scheduled`)
 
 **What it does:** Cancels a pending scheduled post before it's published.
-
-**How to use:**
-1. First, list your scheduled posts to get the ID
-2. Then cancel by ID
 
 **Example:**
 ```
@@ -187,7 +329,9 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 9. Publish to Medium (`medium_publish_article`)
+### Medium (2 tools)
+
+#### 18. Publish to Medium (`medium_publish_article`)
 
 **What it does:** Publishes an article to your Medium account.
 
@@ -200,18 +344,15 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 **Example:**
 ```
 "Publish an article on Medium about observability in banking, tag it with sre, devops, observability"
-"Write a draft on Medium titled 'My SRE Journey' in markdown"
 ```
 
 **Setup required:** You need a Medium integration token. See [Medium Setup](#medium-publishing).
 
 ---
 
-### 10. Get Medium Profile (`medium_get_profile`)
+#### 19. Get Medium Profile (`medium_get_profile`)
 
-**What it does:** Fetches your Medium account information.
-
-**Returns:** Username, display name, profile URL, and user ID.
+**What it does:** Fetches your Medium account information -- username, display name, profile URL.
 
 **Example:**
 ```
@@ -222,9 +363,9 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 
 ---
 
-### 11. Telegram Notifications (Automatic)
+### Telegram Notifications (Automatic)
 
-**What it does:** Sends push notifications to your Telegram when things happen. This is NOT a tool you call -- it fires automatically in the background.
+**Not a tool** -- notifications fire automatically in the background when configured.
 
 **Events that trigger notifications:**
 - LinkedIn post published successfully
@@ -235,26 +376,6 @@ Behind the scenes, AmplifyrMCP uses the [Model Context Protocol (MCP)](https://m
 - Authentication completed
 
 **Why it's useful:** If you schedule posts for the future, you'll get a Telegram ping when they go live (or if they fail). No need to keep checking.
-
-**Setup required:** You need a Telegram bot. See [Telegram Notifications](#telegram-notifications).
-
----
-
-## Features — Planned (Coming Soon)
-
-These tools are designed but not yet implemented:
-
-| Tool | What it will do |
-|------|----------------|
-| `linkedin_get_post_stats` | Get analytics: impressions, likes, comments, shares, clicks |
-| `linkedin_get_comments` | Read all comments on a specific post |
-| `linkedin_reply_to_comment` | Reply to a comment on your post |
-| `linkedin_delete_post` | Delete a published LinkedIn post |
-| `linkedin_create_post_with_image` | Upload image + create post in one step (currently requires two steps) |
-| `linkedin_get_profile_stats` | Get follower count, profile views, search appearances |
-| `linkedin_edit_post` | Edit/update an existing post's text |
-| `linkedin_like_post` | Like someone's post |
-| `linkedin_search_posts` | Search posts by keyword or hashtag |
 
 ---
 
@@ -425,9 +546,15 @@ When LinkedIn's API returns a temporary error:
 ## Architecture
 
 ```
-Claude Desktop ──► MCP Protocol (stdio) ──► AmplifyrMCP Server
+Claude Desktop ──► MCP Protocol (stdio) ──► AmplifyrMCP Server (19 tools)
                                                   │
                                                   ├──► LinkedIn REST API v2
+                                                  │      ├── /rest/posts (create, edit, delete, search)
+                                                  │      ├── /rest/socialActions (comments, likes)
+                                                  │      ├── /rest/images (upload)
+                                                  │      ├── /rest/networkSizes (followers)
+                                                  │      └── /rest/organizationalEntityShareStatistics (analytics)
+                                                  │
                                                   ├──► Medium API
                                                   ├──► Telegram Bot API
                                                   │
@@ -444,6 +571,9 @@ See [Architecture](wiki/Architecture.md) for component details and design decisi
 ## Automation Examples
 
 ```
+# Full engagement workflow
+"Show stats on my last post. Then show me the comments and reply to anyone who asked a question."
+
 # Content calendar
 "Draft 3 LinkedIn posts about AI engineering and schedule them for Tue/Wed/Thu at 10am."
 
@@ -453,14 +583,38 @@ See [Architecture](wiki/Architecture.md) for component details and design decisi
 # Cross-platform publishing
 "Write an article about MCP. Publish on Medium as a draft, then create a LinkedIn post linking to it."
 
+# Post with image
+"Create a LinkedIn post with image ~/Desktop/infographic.png about our Q1 results."
+
+# Find and reshare
+"Search my posts for 'kubernetes'. Show me stats on the best performing one."
+
 # Batch scheduling
 "Here are 5 post ideas. Schedule one per day starting tomorrow at 9am."
-
-# Engagement optimization
-"Here's my draft. Rewrite it for LinkedIn engagement -- add a hook, short paragraphs, and a question at the end."
 ```
 
 See [Automation Recipes](wiki/Automation-Recipes.md) for 15+ ready-to-paste prompt templates.
+
+---
+
+## Testing
+
+All tools are tested with MSW (Mock Service Worker) -- HTTP requests are intercepted at the network level so **zero real LinkedIn API calls** are made during testing.
+
+```bash
+npm test           # Run all 41 tests
+npm run test:watch # Watch mode
+```
+
+**Test coverage:**
+
+| Area | Tests | What's covered |
+|------|-------|----------------|
+| Rate limiter | 5 | Window sliding, limit enforcement, retry-after |
+| Token store | 5 | Encrypt/decrypt, wrong key, missing file |
+| Content formatter | 15 | Formatting, validation, hashtags, edge cases |
+| Post scheduler | 6 | Schedule, poll, retry, cancel, past-date |
+| New tools | 10 | Stats, comments, reply, delete, edit, like, profile stats, search, post with image |
 
 ---
 
@@ -469,6 +623,8 @@ See [Automation Recipes](wiki/Automation-Recipes.md) for 15+ ready-to-paste prom
 ```bash
 make dev          # Run with hot reload (tsx)
 make dev-sse      # Run with SSE transport
+make test         # Run tests
+make typecheck    # Type check only
 make check        # Type check + lint + tests
 make docker-build # Build Docker image
 make docker-run   # Run in container
@@ -479,14 +635,21 @@ make docker-run   # Run in container
 ```
 src/
   index.ts              # Entry point, dependency injection
-  server.ts             # MCP server, tool registration
+  server.ts             # MCP server, 19 tool registrations
   config/               # Env validation (Zod), LinkedIn API constants
   auth/                 # OAuth 2.0, encrypted token storage
-  api/                  # LinkedIn client, Medium client, rate limiter, retry
-  tools/                # 10 tool handlers (one file each)
+  api/                  # LinkedIn client (14 methods), Medium client, rate limiter, retry
+  tools/                # 19 tool handlers (one file each)
   services/             # Content formatting, media handling, scheduling, notifications
   models/               # Zod schemas, error hierarchy, TypeScript types
   utils/                # Logger (pino/stderr), AES-256-GCM crypto, UUID
+
+tests/
+  setup.ts              # MSW handlers for all LinkedIn API endpoints
+  api/                  # Rate limiter tests
+  auth/                 # Token store tests
+  services/             # Content formatter + scheduler tests
+  tools/                # Tool handler tests (10 tests)
 ```
 
 See [Contributing](wiki/Contributing.md) for code guidelines and how to add new tools.
@@ -501,10 +664,11 @@ See [Contributing](wiki/Contributing.md) for code guidelines and how to add new 
 | "Directory does not exist" | Create manually: `mkdir -p data` |
 | Posts fail with 403 | Enable "Share on LinkedIn" product in your developer app |
 | Posts fail with 426 | LinkedIn API version may need updating -- check `src/config/linkedin-api.ts` |
+| Comments/stats fail with 403 | You may need additional scopes -- re-authenticate after updating |
 | "Not authenticated" | Say "Authenticate with LinkedIn" in Claude Desktop |
 | Token expired | Auto-refreshes. If refresh fails, re-authenticate |
 | Claude Desktop no tools | Verify absolute path in config, run `npm run build`, restart Claude Desktop |
-| JSON parse errors | Rebuild: `npm run build` (fixes dotenv stdout issue) |
+| JSON parse errors | Rebuild: `npm run build` |
 | Telegram not arriving | Message your bot first, verify token and chat ID |
 | Medium tools missing | Set `MEDIUM_INTEGRATION_TOKEN` and restart |
 | Medium 401 error | Generate new token at medium.com/me/settings/security |

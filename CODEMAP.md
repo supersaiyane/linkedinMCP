@@ -12,7 +12,7 @@
 - **Purpose:** MCP server connecting Claude Desktop to LinkedIn, Medium, and Telegram
 - **Transport:** stdio (primary) + SSE HTTP (secondary)
 - **Total source:** ~3400 lines across 43 files
-- **Tests:** 31 passing (4 test files, ~418 lines)
+- **Tests:** 41 passing (5 test files, ~710 lines)
 - **Build:** `tsc` compiles clean (`npx tsc --noEmit` = 0 errors)
 
 ---
@@ -75,54 +75,54 @@
 
 #### LinkedIn — Content Creation (4 tools)
 
-| File | Lines | Tool Name | Status |
+| File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
-| `authenticate.tool.ts` | 53 | `linkedin_authenticate` | DONE |
-| `create-post.tool.ts` | 67 | `linkedin_create_post` | DONE |
-| `create-post-with-image.tool.ts` | 59 | `linkedin_create_post_with_image` | DONE |
-| `publish-article.tool.ts` | 80 | `linkedin_publish_article` | DONE |
+| `authenticate.tool.ts` | 53 | `linkedin_authenticate` | — |
+| `create-post.tool.ts` | 67 | `linkedin_create_post` | — |
+| `create-post-with-image.tool.ts` | 59 | `linkedin_create_post_with_image` | YES |
+| `publish-article.tool.ts` | 80 | `linkedin_publish_article` | — |
 
 #### LinkedIn — Post Management (3 tools)
 
-| File | Lines | Tool Name | Status |
+| File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
-| `edit-post.tool.ts` | 27 | `linkedin_edit_post` | DONE |
-| `delete-post.tool.ts` | 26 | `linkedin_delete_post` | DONE |
-| `upload-media.tool.ts` | 39 | `linkedin_upload_media` | DONE |
+| `edit-post.tool.ts` | 27 | `linkedin_edit_post` | YES |
+| `delete-post.tool.ts` | 26 | `linkedin_delete_post` | YES |
+| `upload-media.tool.ts` | 39 | `linkedin_upload_media` | — |
 
 #### LinkedIn — Engagement (3 tools)
 
-| File | Lines | Tool Name | Status |
+| File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
-| `like-post.tool.ts` | 26 | `linkedin_like_post` | DONE |
-| `get-comments.tool.ts` | 38 | `linkedin_get_comments` | DONE |
-| `reply-to-comment.tool.ts` | 33 | `linkedin_reply_to_comment` | DONE |
+| `like-post.tool.ts` | 26 | `linkedin_like_post` | YES |
+| `get-comments.tool.ts` | 38 | `linkedin_get_comments` | YES |
+| `reply-to-comment.tool.ts` | 33 | `linkedin_reply_to_comment` | YES |
 
 #### LinkedIn — Analytics (4 tools)
 
-| File | Lines | Tool Name | Status |
+| File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
-| `get-profile.tool.ts` | 31 | `linkedin_get_profile` | DONE |
-| `get-profile-stats.tool.ts` | 37 | `linkedin_get_profile_stats` | DONE |
-| `get-post-stats.tool.ts` | 34 | `linkedin_get_post_stats` | DONE |
-| `search-posts.tool.ts` | 42 | `linkedin_search_posts` | DONE |
+| `get-profile.tool.ts` | 31 | `linkedin_get_profile` | — |
+| `get-profile-stats.tool.ts` | 37 | `linkedin_get_profile_stats` | YES |
+| `get-post-stats.tool.ts` | 34 | `linkedin_get_post_stats` | YES |
+| `search-posts.tool.ts` | 42 | `linkedin_search_posts` | YES (2 tests) |
 
 #### LinkedIn — Scheduling (3 tools)
 
-| File | Lines | Tool Name | Status |
+| File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
-| `schedule-post.tool.ts` | 64 | `linkedin_schedule_post` | DONE |
-| `list-scheduled.tool.ts` | 44 | `linkedin_list_scheduled` | DONE |
-| `cancel-scheduled.tool.ts` | 26 | `linkedin_cancel_scheduled` | DONE |
+| `schedule-post.tool.ts` | 64 | `linkedin_schedule_post` | — |
+| `list-scheduled.tool.ts` | 44 | `linkedin_list_scheduled` | — |
+| `cancel-scheduled.tool.ts` | 26 | `linkedin_cancel_scheduled` | — |
 
 #### Medium (2 tools)
 
-| File | Lines | Tool Name | Status |
+| File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
-| `medium-publish.tool.ts` | 67 | `medium_publish_article` | DONE |
-| `medium-profile.tool.ts` | 28 | `medium_get_profile` | DONE |
+| `medium-publish.tool.ts` | 67 | `medium_publish_article` | — |
+| `medium-profile.tool.ts` | 28 | `medium_get_profile` | — |
 
-| `index.ts` | 19 | — | Re-exports all 19 tool schemas + handlers |
+| `index.ts` | 19 | Re-exports all 19 tool schemas + handlers | — |
 
 ### Services (`src/services/`)
 
@@ -151,6 +151,30 @@
 
 ---
 
+## Tests (`tests/`)
+
+| File | Lines | Tests | What's covered |
+|------|-------|-------|----------------|
+| `setup.ts` | 112 | — | MSW server setup with handlers for all LinkedIn API endpoints |
+| `api/rate-limiter.test.ts` | 44 | 5 | Window sliding, limit enforcement, retry-after |
+| `auth/file-token-store.test.ts` | 68 | 5 | Encrypt/decrypt roundtrip, wrong key, missing file |
+| `services/content-formatter.test.ts` | 99 | 15 | Formatting, validation, hashtags, edge cases |
+| `services/post-scheduler.test.ts` | 107 | 6 | Schedule, poll, retry, cancel, past-date rejection |
+| `tools/new-tools.test.ts` | 167 | 10 | All 9 new tools: stats, comments, reply, delete, edit, like, profile stats, search (2), post with image |
+
+**Total: 41 tests, all passing, zero real API calls (MSW mocked)**
+
+### Test coverage gaps
+
+| Area | Priority |
+|------|----------|
+| `linkedin-client.ts` error handling (401/403/429/500) | HIGH |
+| `auth-manager.ts` OAuth flow | MEDIUM |
+| Original tools (authenticate, create_post, publish_article, upload_media, get_profile) | MEDIUM |
+| Scheduling tools (schedule, list, cancel) | LOW (service layer already tested) |
+
+---
+
 ## OAuth Scopes
 
 | Scope | Purpose | Status |
@@ -164,26 +188,6 @@
 | `w_organization_social` | Write org social data | NEW |
 
 Note: Users must re-authenticate after scope changes to pick up new permissions.
-
----
-
-## Tests (`tests/`)
-
-| File | Lines | Tests | What's covered |
-|------|-------|-------|----------------|
-| `setup.ts` | 50 | — | MSW server setup, test fixtures |
-| `api/rate-limiter.test.ts` | 44 | 5 | Window sliding, limit enforcement, retry-after |
-| `auth/file-token-store.test.ts` | 68 | 5 | Encrypt/decrypt roundtrip, wrong key, missing file |
-| `services/content-formatter.test.ts` | 99 | 15 | Formatting, validation, hashtags, edge cases |
-| `services/post-scheduler.test.ts` | 107 | 6 | Schedule, poll, retry, cancel, past-date rejection |
-
-### Missing Tests
-
-| File needed | Priority |
-|-------------|----------|
-| `tests/api/linkedin-client.test.ts` | HIGH |
-| `tests/auth/auth-manager.test.ts` | MEDIUM |
-| `tests/tools/*.test.ts` | HIGH |
 
 ---
 
@@ -222,3 +226,4 @@ Home, Getting-Started, Installation, Quick-Start-Guide, LinkedIn-App-Setup, Medi
 8. **One file, one tool** — each MCP tool is a separate `.tool.ts` file with exported schema + handler
 9. **Shared error handler** — `makeErrorResult()` in server.ts wraps all tool errors consistently
 10. **Helper refactoring in API client** — `authHeaders()` and `handleApiError()` reduce duplication
+11. **MSW for testing** — all HTTP intercepted at network level, no axios mocking, zero real API calls
