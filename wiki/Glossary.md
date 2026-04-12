@@ -315,6 +315,18 @@ Definitions for every technical term used across this wiki.
 
 ---
 
+## Community Management API
+
+A LinkedIn API product that grants access to social interaction endpoints (`/socialActions`): reading comments, viewing post engagement stats, replying to comments, and liking posts.
+
+**Analogy:** Think of it as a separate "engagement pass" -- your main LinkedIn app pass lets you post, but this pass lets you read and interact with the responses.
+
+**Why it matters here:** LinkedIn requires this product to be the **only** product on a developer app. Since the primary app already has "Share on LinkedIn" for posting, AmplifyrMCP uses a dual-app architecture: one app for posting (primary) and a separate app for engagement (community). Five tools depend on this product: `linkedin_get_comments`, `linkedin_get_post_stats`, `linkedin_reply_to_comment`, `linkedin_like_post`, and `linkedin_authenticate_community`.
+
+**See also:** [LinkedIn App Setup](LinkedIn-App-Setup), [Architecture](Architecture)
+
+---
+
 ## Key Takeaways
 
 - This glossary covers every technical term referenced in the wiki. Use the anchor links (e.g., `Glossary#mcp`) to link directly from other pages.

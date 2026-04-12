@@ -172,11 +172,31 @@ The scheduler retries up to three times with status tracking. After three failur
 
 ---
 
+## Community Management API
+
+### Why do I need two LinkedIn apps?
+
+LinkedIn requires the "Community Management API" product to be the **only** product on a developer app (for legal/security reasons). Since posting requires "Share on LinkedIn" (a different product), you need a separate app for engagement tools (reading comments, post stats, replying, liking).
+
+### Which tools need the second app?
+
+Five tools require the Community Management API app: `linkedin_authenticate_community`, `linkedin_get_comments`, `linkedin_get_post_stats`, `linkedin_reply_to_comment`, and `linkedin_like_post`. All other tools (15 of them) work with the primary app alone.
+
+### Can I skip the second app?
+
+Yes. If you only need posting, scheduling, editing, deleting, searching, and Medium publishing, one app is enough. The 5 engagement tools simply won't appear in Claude Desktop.
+
+### How do I authenticate both apps?
+
+Two separate OAuth flows. Say "Authenticate with LinkedIn" for the primary app (port 3456), then "Authenticate with Community Management API" for the engagement app (port 3457). Each stores tokens in a separate encrypted file.
+
+---
+
 ## Related Pages
 
 - [Getting-Started](Getting-Started) -- Initial setup walkthrough
 - [Configuration](Configuration) -- Full environment variable reference
-- [Tools-Reference](Tools-Reference) -- All 9 MCP tools with parameters and examples
+- [Tools-Reference](Tools-Reference) -- All 20 MCP tools with parameters and examples
 - [Architecture](Architecture) -- System design and component details
 - [Troubleshooting](Troubleshooting) -- Error-specific solutions
 - [LinkedIn-App-Setup](LinkedIn-App-Setup) -- LinkedIn developer app creation guide

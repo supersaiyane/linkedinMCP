@@ -93,6 +93,10 @@ LINKEDIN_REFRESH_TOKEN=<PRE_OBTAINED_REFRESH_TOKEN>
 | `TELEGRAM_BOT_TOKEN` | `string` | _(none)_ | No | Telegram Bot API token obtained from @BotFather. Both `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` must be set to enable notifications. See [Telegram Setup](Telegram-Setup). |
 | `TELEGRAM_CHAT_ID` | `string` | _(none)_ | No | Telegram chat ID where notifications are sent. Obtain by messaging your bot and checking the `/getUpdates` endpoint. See [Telegram Setup](Telegram-Setup). |
 | `MEDIUM_INTEGRATION_TOKEN` | `string` | _(none)_ | No | Medium API integration token. When set, enables `medium_publish_article` and `medium_get_profile` tools. See [Medium Setup](Medium-Setup). |
+| `LINKEDIN_COMMUNITY_CLIENT_ID` | `string` | _(none)_ | No | Client ID for a **separate** LinkedIn app with only the "Community Management API" product. Enables engagement tools (comments, stats, reply, like). |
+| `LINKEDIN_COMMUNITY_CLIENT_SECRET` | `string` | _(none)_ | No | Client Secret for the Community Management API app. |
+| `LINKEDIN_COMMUNITY_REDIRECT_URI` | `string` (URL) | `http://localhost:3457/callback` | No | OAuth callback URL for the community app. Uses port 3457 to avoid conflict with the primary app on 3456. |
+| `COMMUNITY_TOKEN_STORE_PATH` | `string` (path) | `./data/community-tokens.enc` | No | File path for encrypted community app tokens. Separate from primary tokens. |
 
 ---
 
@@ -223,7 +227,8 @@ The Claude Desktop `env` block injects values as system environment variables be
 - Two variables are required: `LINKEDIN_CLIENT_ID` and `LINKEDIN_CLIENT_SECRET`. Everything else has defaults.
 - Replace `TOKEN_ENCRYPTION_KEY` in any environment beyond local development.
 - In stdio mode (the default for Claude Desktop), all logs go to stderr. This is critical -- stdout is reserved for the MCP protocol.
-- Optional integrations (Telegram, Medium) activate when their respective tokens are set.
+- Optional integrations (Telegram, Medium, Community Management API) activate when their respective tokens/credentials are set.
+- The Community Management API requires a **separate LinkedIn developer app** -- set `LINKEDIN_COMMUNITY_CLIENT_ID` and `LINKEDIN_COMMUNITY_CLIENT_SECRET` to enable engagement tools.
 - The server validates all config at startup and fails with specific error messages.
 
 ## Related Pages

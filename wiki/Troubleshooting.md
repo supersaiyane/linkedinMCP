@@ -718,6 +718,50 @@ If you are stuck after trying the fixes above, open an issue at https://github.c
 - Telegram and Medium integrations only activate when their respective tokens are set.
 - Enable `LOG_LEVEL=debug` for detailed diagnostic output.
 
+## Community Management API Issues
+
+### 403: Not enough permissions to access partnerApiSocialActions
+
+**Symptom:** `linkedin_get_comments`, `linkedin_get_post_stats`, or `linkedin_reply_to_comment` returns a 403 error mentioning `partnerApiSocialActions`.
+
+**Who hits this:** Anyone trying to use engagement tools without the Community Management API app configured.
+
+**Severity:** Expected behavior if community app is not set up. Not a bug.
+
+**Cause:** LinkedIn requires the "Community Management API" product to be enabled on a **separate** developer app. This product cannot coexist with "Share on LinkedIn" on the same app.
+
+**Fix:**
+
+1. Create a new LinkedIn developer app at linkedin.com/developers
+2. On the Products tab, request **only** "Community Management API" (do not add any other products)
+3. Wait for approval (may be instant or take 24-48 hours)
+4. Copy the Client ID and Client Secret into your `.env`:
+   ```
+   LINKEDIN_COMMUNITY_CLIENT_ID=your_second_app_id
+   LINKEDIN_COMMUNITY_CLIENT_SECRET=your_second_app_secret
+   ```
+5. Rebuild: `npm run build`
+6. Restart Claude Desktop
+7. Say "Authenticate with Community Management API" (one-time, uses port 3457)
+
+**Root cause:** LinkedIn gates socialActions endpoints behind the Community Management API product, and requires it to be the sole product on the app for legal/security reasons.
+
+### Engagement tools not showing in Claude Desktop
+
+**Symptom:** `linkedin_get_comments`, `linkedin_get_post_stats`, `linkedin_reply_to_comment`, `linkedin_like_post`, and `linkedin_authenticate_community` tools do not appear.
+
+**Cause:** `LINKEDIN_COMMUNITY_CLIENT_ID` is not set in your environment.
+
+**Fix:** Set `LINKEDIN_COMMUNITY_CLIENT_ID` and `LINKEDIN_COMMUNITY_CLIENT_SECRET` in your `.env` or Claude Desktop config, rebuild, and restart.
+
+### Community auth fails: port 3457 in use
+
+**Symptom:** "Authenticate with Community Management API" fails with a port-in-use error.
+
+**Fix:** Free port 3457 (another process is using it) and retry.
+
+---
+
 ## Related Pages
 
 - [Configuration](Configuration) -- Environment variable reference

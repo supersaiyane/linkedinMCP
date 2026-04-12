@@ -20,12 +20,20 @@ An MCP server that connects Claude Desktop to LinkedIn, Medium, and Telegram thr
 The AmplifyrMCP turns Claude Desktop into a LinkedIn content management tool. Once connected, you can:
 
 - Create text posts on your LinkedIn feed with hashtags and visibility controls
+- Create posts with images in a single step
 - Publish articles with titles, descriptions, and cover images
+- Edit or delete existing posts
 - Upload images for use in posts
-- View your LinkedIn profile data and URN
+- View your LinkedIn profile data, follower count, and URN
+- Search your own posts by keyword
 - Schedule posts for future publication with automatic retry on failure
+- Cancel pending scheduled posts
+- Like posts, read comments, and reply to comments (requires Community Management API app)
+- Get post analytics: likes, comments, shares
 - Publish articles to Medium with markdown/HTML, tags, and draft/public modes
 - Receive Telegram notifications when posts publish, fail, or authenticate
+
+The server supports a **dual-app architecture**: a primary app for posting and a separate Community Management API app for engagement features (comments, stats, reply). See [LinkedIn App Setup](LinkedIn-App-Setup) for details.
 
 All interactions happen through natural language in Claude Desktop. No command-line usage required after initial setup.
 

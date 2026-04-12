@@ -195,7 +195,7 @@ Write a Medium article about <TOPIC>. Use markdown formatting with headers,
 code blocks, and bullet points. Save it as a draft with tags: <TAG_1>, <TAG_2>, <TAG_3>.
 ```
 
-**Expected outcome:** Claude calls `medium_create_post` with the generated markdown, your tags, and `publishStatus: "draft"`. You receive the Medium draft URL.
+**Expected outcome:** Claude calls `medium_publish_article` with the generated markdown, your tags, and `publishStatus: "draft"`. You receive the Medium draft URL.
 
 ---
 
@@ -326,12 +326,77 @@ Keep it authentic, not corporate. Post it now.
 
 ---
 
+## Engagement Workflows (requires Community Management API app)
+
+These recipes require the Community Management API app to be configured. See [LinkedIn App Setup](LinkedIn-App-Setup).
+
+### Post Performance Review
+
+**Goal:** Check how your recent post performed and engage with commenters.
+
+**Prompt template:**
+
+```text
+Show me stats on my post urn:li:share:12345. Then show me the comments.
+Reply to anyone who asked a question with a thoughtful answer.
+```
+
+**Expected outcome:** Claude fetches likes/comments/shares count, lists all comments, and helps you draft replies.
+
+---
+
+### Find and Amplify Top Content
+
+**Goal:** Find your best-performing past content.
+
+**Prompt template:**
+
+```text
+Search my LinkedIn posts for "kubernetes". Show me stats on each one.
+Which got the most engagement?
+```
+
+**Expected outcome:** Claude searches your posts, fetches stats for matches, and recommends the best performer.
+
+---
+
+### Daily Engagement Routine
+
+**Goal:** Engage with your audience systematically.
+
+**Prompt template:**
+
+```text
+Show me comments on my last 3 posts. For each unanswered question,
+draft a reply. Then like any posts from the commenters' profiles.
+```
+
+**Expected outcome:** Claude reads comments across posts, identifies questions, drafts contextual replies.
+
+---
+
+### Post with Image
+
+**Goal:** Publish a visual post in one step.
+
+**Prompt template:**
+
+```text
+Create a LinkedIn post with image ~/Desktop/chart.png about our Q1 results
+with hashtags growth, startup, metrics. Show me the draft first.
+```
+
+**Expected outcome:** Claude uploads the image, creates the post with it attached, and returns the URL.
+
+---
+
 ## Key Takeaways
 
 - Every recipe follows the pattern: Goal, Prompt template, Expected outcome.
 - Always request a draft before publishing. Published posts cannot be recalled through the server.
 - Scheduling supports batch workflows -- plan a full week in one conversation.
 - Cross-platform recipes (Medium + LinkedIn) work within a single session.
+- Engagement recipes (comments, stats, reply) require the Community Management API app.
 - Provide tone and context instructions for higher-quality output.
 
 ## Related Pages

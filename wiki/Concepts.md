@@ -47,21 +47,32 @@ Without MCP, Claude has no way to reach LinkedIn. With this MCP server running, 
 
 ## What Does This Server Do?
 
-This server provides nine tools that Claude can call:
+This server provides up to 20 tools that Claude can call:
 
 | Tool | Service | Purpose |
 |------|---------|---------|
 | `linkedin_authenticate` | LinkedIn | Connect your LinkedIn account via OAuth |
 | `linkedin_create_post` | LinkedIn | Publish a text post with optional hashtags |
+| `linkedin_create_post_with_image` | LinkedIn | Upload image and create post in one step |
 | `linkedin_publish_article` | LinkedIn | Share an article with title and cover image |
+| `linkedin_edit_post` | LinkedIn | Update an existing post's text |
+| `linkedin_delete_post` | LinkedIn | Remove a post permanently |
 | `linkedin_upload_media` | LinkedIn | Upload an image for use in posts |
 | `linkedin_get_profile` | LinkedIn | Retrieve your LinkedIn profile data |
+| `linkedin_get_profile_stats` | LinkedIn | Get follower count |
+| `linkedin_search_posts` | LinkedIn | Search your own posts by keyword |
 | `linkedin_schedule_post` | LinkedIn | Queue a post for future publication |
 | `linkedin_list_scheduled` | LinkedIn | View and manage scheduled posts |
+| `linkedin_cancel_scheduled` | LinkedIn | Cancel a pending scheduled post |
+| `linkedin_authenticate_community` | LinkedIn | Connect Community Management API (separate app) |
+| `linkedin_get_post_stats` | LinkedIn | Get likes, comments, shares on a post |
+| `linkedin_get_comments` | LinkedIn | Read comments on a post |
+| `linkedin_reply_to_comment` | LinkedIn | Reply to a specific comment |
+| `linkedin_like_post` | LinkedIn | Like a post |
 | `medium_publish_article` | Medium | Publish an article on Medium |
-| `telegram_send_message` | Telegram | Send a notification message |
+| `medium_get_profile` | Medium | Fetch Medium profile info |
 
-LinkedIn is the primary integration. Medium and Telegram are optional add-ons that extend the server's capabilities.
+LinkedIn is the primary integration (18 tools). Medium (2 tools) and Telegram (automatic notifications, not a tool) are optional add-ons. Five engagement tools require a separate LinkedIn app with the Community Management API product.
 
 ---
 
@@ -143,7 +154,7 @@ The rate limiter runs in memory and resets when the server restarts. It acts as 
             v
 +-----------+---------------+
 |     Tool Handlers         |    <-- Each tool validates input with Zod schemas
-|  (9 tools registered)     |
+|  (up to 20 tools)         |
 +-----------+---------------+
             |
      +------+------+
@@ -177,7 +188,7 @@ Data flows top to bottom for requests and bottom to top for responses. The Auth 
 ## Key Takeaways
 
 - MCP is a standard protocol that lets Claude Desktop use external tools -- like a USB port for AI capabilities.
-- This server provides 9 tools spanning LinkedIn, Medium, and Telegram.
+- This server provides up to 20 tools spanning LinkedIn and Medium, with automatic Telegram notifications.
 - OAuth 2.0 grants the server temporary, scoped access to your LinkedIn account without exposing your password.
 - Tokens are encrypted at rest with AES-256-GCM. The encryption key never leaves your machine.
 - The scheduler uses a local SQLite database and a per-minute cron job to publish posts at specified times.

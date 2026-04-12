@@ -103,15 +103,28 @@ src/
     linkedin-client.ts        Low-level HTTP client for LinkedIn REST API v2
     rate-limiter.ts           Sliding window rate limiter (in-memory)
     retry.ts                  Axios response interceptor for 429/5xx retry with backoff
-  tools/
+  tools/                        20 tool handlers (one file each)
     index.ts                  Re-exports all tool schemas and handlers
-    authenticate.tool.ts      linkedin_authenticate: OAuth flow trigger
+    authenticate.tool.ts      linkedin_authenticate: OAuth flow (primary app, port 3456)
+    authenticate-community.tool.ts  linkedin_authenticate_community: OAuth flow (community app, port 3457)
     create-post.tool.ts       linkedin_create_post: text posts with hashtags
+    create-post-with-image.tool.ts  linkedin_create_post_with_image: image + post in one step
     publish-article.tool.ts   linkedin_publish_article: article sharing with source URL
+    edit-post.tool.ts         linkedin_edit_post: update post text
+    delete-post.tool.ts       linkedin_delete_post: remove a post
     upload-media.tool.ts      linkedin_upload_media: image upload (two-step flow)
-    get-profile.tool.ts       linkedin_get_profile: fetch and display profile data
+    like-post.tool.ts         linkedin_like_post: like a post
+    get-comments.tool.ts      linkedin_get_comments: read post comments
+    reply-to-comment.tool.ts  linkedin_reply_to_comment: reply to a comment
+    get-profile.tool.ts       linkedin_get_profile: fetch profile data
+    get-profile-stats.tool.ts linkedin_get_profile_stats: follower count
+    get-post-stats.tool.ts    linkedin_get_post_stats: likes, comments, shares
+    search-posts.tool.ts      linkedin_search_posts: search own posts by keyword
     schedule-post.tool.ts     linkedin_schedule_post: queue a post for future publish
     list-scheduled.tool.ts    linkedin_list_scheduled: query the scheduler database
+    cancel-scheduled.tool.ts  linkedin_cancel_scheduled: cancel pending post
+    medium-publish.tool.ts    medium_publish_article: publish to Medium
+    medium-profile.tool.ts    medium_get_profile: fetch Medium profile
   services/
     content-formatter.ts      Text processing: hashtag appending, markdown stripping, validation
     media-handler.ts          File reading, MIME detection, size validation for uploads
@@ -129,7 +142,7 @@ tests/
   setup.ts                    MSW server configuration and shared test fixtures
   auth/                       Tests for auth-manager and file-token-store
   api/                        Tests for linkedin-client and rate-limiter
-  tools/                      Tests for tool handlers (create-post, publish-article, schedule-post)
+  tools/                      Tests for tool handlers (10 tests covering all new tools)
   services/                   Tests for content-formatter and post-scheduler
   fixtures/                   Static test data (tokens.json, profile-response.json, post-response.json)
 ```

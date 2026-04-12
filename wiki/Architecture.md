@@ -24,11 +24,24 @@ graph TB
     MCP -->|HTTPS REST| MD[Medium API<br/>api.medium.com]
     MCP -->|HTTPS| TG[Telegram Bot API<br/>api.telegram.org]
 
-    MCP -->|Read/Write| TE[data/tokens.enc<br/>AES-256-GCM encrypted]
+    MCP -->|Read/Write| TE[data/tokens.enc<br/>Primary app tokens]
+    MCP -->|Read/Write| CTE[data/community-tokens.enc<br/>Community app tokens]
     MCP -->|Read/Write| SDB[data/scheduler.db<br/>SQLite]
+
+    subgraph LinkedIn API
+        LI_POSTS[/rest/posts<br/>create, edit, delete, search]
+        LI_SOCIAL[/rest/socialActions<br/>stats, comments, likes]
+        LI_IMAGES[/rest/images<br/>upload]
+    end
+
+    MCP -->|Primary App<br/>port 3456| LI_POSTS
+    MCP -->|Primary App| LI_IMAGES
+    MCP -->|Community App<br/>port 3457| LI_SOCIAL
 ```
 
-The server sits between the MCP client (Claude Desktop or a remote client) and three external APIs. It handles authentication, content formatting, rate limiting, retries, scheduling, and notifications so the AI assistant does not need to manage any of that directly.
+The server sits between the MCP client (Claude Desktop or a remote client) and external APIs. It uses a **dual-app architecture** for LinkedIn: a primary app for posting (port 3456) and an optional Community Management API app for engagement (port 3457). This split is required by LinkedIn -- the Community Management API product must be the only product on its app.
+
+It handles authentication, content formatting, rate limiting, retries, scheduling, and notifications so the AI assistant does not need to manage any of that directly.
 
 ---
 
