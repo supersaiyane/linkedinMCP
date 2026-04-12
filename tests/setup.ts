@@ -41,6 +41,95 @@ export const handlers = [
       scope: "openid,profile,w_member_social",
     });
   }),
+
+  // Share statistics (post stats)
+  http.get("https://api.linkedin.com/rest/organizationalEntityShareStatistics", () => {
+    return HttpResponse.json({
+      elements: [
+        {
+          totalShareStatistics: {
+            impressionCount: 1250,
+            likeCount: 42,
+            commentCount: 8,
+            shareCount: 5,
+            clickCount: 73,
+          },
+        },
+      ],
+    });
+  }),
+
+  // Get comments
+  http.get("https://api.linkedin.com/rest/socialActions/:urn/comments", () => {
+    return HttpResponse.json({
+      elements: [
+        {
+          "$URN": "urn:li:comment:(urn:li:share:123,456)",
+          actor: "urn:li:person:commenter1",
+          message: { text: "Great post!" },
+          created: { time: 1712000000000 },
+        },
+        {
+          "$URN": "urn:li:comment:(urn:li:share:123,789)",
+          actor: "urn:li:person:commenter2",
+          message: { text: "Thanks for sharing." },
+          created: { time: 1712001000000 },
+        },
+      ],
+    });
+  }),
+
+  // Reply to comment
+  http.post("https://api.linkedin.com/rest/socialActions/:urn/comments", () => {
+    return HttpResponse.json({
+      "$URN": "urn:li:comment:(urn:li:share:123,999)",
+    });
+  }),
+
+  // Delete post
+  http.delete("https://api.linkedin.com/rest/posts/:urn", () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // Edit post (PATCH)
+  http.patch("https://api.linkedin.com/rest/posts/:urn", () => {
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // Like post
+  http.post("https://api.linkedin.com/rest/socialActions/:urn/likes", () => {
+    return new HttpResponse(null, { status: 201 });
+  }),
+
+  // Network sizes (profile stats)
+  http.get("https://api.linkedin.com/rest/networkSizes/:urn", () => {
+    return HttpResponse.json({
+      firstDegreeSize: 4832,
+    });
+  }),
+
+  // Upload binary (PUT to dms-uploads)
+  http.put("https://www.linkedin.com/dms-uploads/test", () => {
+    return new HttpResponse(null, { status: 201 });
+  }),
+
+  // Search posts (GET /rest/posts with query params)
+  http.get("https://api.linkedin.com/rest/posts", () => {
+    return HttpResponse.json({
+      elements: [
+        {
+          id: "urn:li:share:111",
+          commentary: "First post about AI and automation",
+          createdAt: 1712000000000,
+        },
+        {
+          id: "urn:li:share:222",
+          commentary: "Second post about DevOps practices",
+          createdAt: 1712100000000,
+        },
+      ],
+    });
+  }),
 ];
 
 export const mswServer = setupServer(...handlers);
