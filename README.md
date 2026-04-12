@@ -546,21 +546,29 @@ When LinkedIn's API returns a temporary error:
 ## Architecture
 
 ```
-Claude Desktop ──► MCP Protocol (stdio) ──► AmplifyrMCP Server (19 tools)
+Claude Desktop ──► MCP Protocol (stdio) ──► AmplifyrMCP Server (up to 20 tools)
                                                   │
-                                                  ├──► LinkedIn REST API v2
+                                                  ├──► LinkedIn App 1 (primary, port 3456)
+                                                  │      Products: "Share on LinkedIn" + "Sign In"
                                                   │      ├── /rest/posts (create, edit, delete, search)
-                                                  │      ├── /rest/socialActions (comments, likes)
                                                   │      ├── /rest/images (upload)
-                                                  │      ├── /rest/networkSizes (followers)
-                                                  │      └── /rest/organizationalEntityShareStatistics (analytics)
+                                                  │      └── /rest/networkSizes (followers)
+                                                  │
+                                                  ├──► LinkedIn App 2 (community, port 3457, optional)
+                                                  │      Product: "Community Management API" only
+                                                  │      ├── /rest/socialActions (post stats)
+                                                  │      ├── /rest/socialActions/{urn}/comments (read/reply)
+                                                  │      └── /rest/socialActions/{urn}/likes (like)
                                                   │
                                                   ├──► Medium API
                                                   ├──► Telegram Bot API
                                                   │
-                                                  ├──► data/tokens.enc   (encrypted OAuth tokens)
-                                                  └──► data/scheduler.db (SQLite scheduling queue)
+                                                  ├──► data/tokens.enc           (primary app tokens)
+                                                  ├──► data/community-tokens.enc (community app tokens)
+                                                  └──► data/scheduler.db         (SQLite scheduling queue)
 ```
+
+**Why two LinkedIn apps?** LinkedIn requires the "Community Management API" product to be the only product on an app (for legal/security reasons). Since posting requires "Share on LinkedIn", you need a separate app for engagement features. If you only care about posting/scheduling, one app is enough.
 
 **Tech stack:** TypeScript, MCP SDK, axios, better-sqlite3, Zod, pino, croner
 

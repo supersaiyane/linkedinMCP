@@ -11,8 +11,9 @@
 - **Stack:** Node.js 20+ / TypeScript 5.4+ / ESM (`"type": "module"`)
 - **Purpose:** MCP server connecting Claude Desktop to LinkedIn, Medium, and Telegram
 - **Transport:** stdio (primary) + SSE HTTP (secondary)
-- **Total source:** ~3400 lines across 43 files
+- **Total source:** ~3600 lines across 44 files
 - **Tests:** 41 passing (5 test files, ~710 lines)
+- **Dual-app architecture:** Primary app (posting) + Community Management API app (engagement)
 - **Build:** `tsc` compiles clean (`npx tsc --noEmit` = 0 errors)
 
 ---
@@ -23,8 +24,8 @@
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `index.ts` | 142 | Entry point — CLI args, DI wiring, transport setup, graceful shutdown |
-| `server.ts` | 356 | `LinkedInMCPServer` — registers 19 tools via `McpServer.tool()` |
+| `index.ts` | 168 | Entry point — CLI args, DI wiring (primary + community app), transport, graceful shutdown |
+| `server.ts` | 370 | `LinkedInMCPServer` — registers up to 20 tools (15 always + 5 when community app configured) |
 
 ### Config (`src/config/`)
 
@@ -90,21 +91,24 @@
 | `delete-post.tool.ts` | 26 | `linkedin_delete_post` | YES |
 | `upload-media.tool.ts` | 39 | `linkedin_upload_media` | — |
 
-#### LinkedIn — Engagement (3 tools)
+#### LinkedIn — Engagement (5 tools, requires Community Management API app)
+
+These tools only appear when `LINKEDIN_COMMUNITY_CLIENT_ID` is configured.
 
 | File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
+| `authenticate-community.tool.ts` | 55 | `linkedin_authenticate_community` | — |
 | `like-post.tool.ts` | 26 | `linkedin_like_post` | YES |
 | `get-comments.tool.ts` | 38 | `linkedin_get_comments` | YES |
 | `reply-to-comment.tool.ts` | 33 | `linkedin_reply_to_comment` | YES |
+| `get-post-stats.tool.ts` | 37 | `linkedin_get_post_stats` | YES |
 
-#### LinkedIn — Analytics (4 tools)
+#### LinkedIn — Analytics (3 tools)
 
 | File | Lines | Tool Name | Tested |
 |------|-------|-----------|--------|
 | `get-profile.tool.ts` | 31 | `linkedin_get_profile` | — |
 | `get-profile-stats.tool.ts` | 37 | `linkedin_get_profile_stats` | YES |
-| `get-post-stats.tool.ts` | 34 | `linkedin_get_post_stats` | YES |
 | `search-posts.tool.ts` | 42 | `linkedin_search_posts` | YES (2 tests) |
 
 #### LinkedIn — Scheduling (3 tools)
@@ -175,19 +179,21 @@
 
 ---
 
-## OAuth Scopes
+## Dual-App Architecture
 
-| Scope | Purpose | Status |
-|-------|---------|--------|
-| `openid` | OpenID Connect auth | Active |
-| `profile` | Read profile info | Active |
-| `w_member_social` | Write posts, comments, likes | Active |
-| `r_member_social` | Read comments, analytics | NEW |
-| `r_liteprofile` | Read lite profile | NEW |
-| `r_organization_social` | Read org social data | NEW |
-| `w_organization_social` | Write org social data | NEW |
+LinkedIn requires the "Community Management API" to be the **only** product on an app. So engagement tools need a separate app.
 
-Note: Users must re-authenticate after scope changes to pick up new permissions.
+### App 1 — Primary (port 3456)
+Products: "Share on LinkedIn" + "Sign In with LinkedIn using OpenID Connect"
+Scopes: `openid`, `profile`, `w_member_social`
+Tools: 15 (posting, scheduling, editing, deleting, searching, Medium, profile)
+
+### App 2 — Community (port 3457, optional)
+Product: "Community Management API" only
+Scopes: `r_member_social`, `w_member_social`
+Tools: 5 (get_comments, get_post_stats, reply_to_comment, like_post, authenticate_community)
+
+When `LINKEDIN_COMMUNITY_CLIENT_ID` is not set, the 5 engagement tools are not registered. Everything else works.
 
 ---
 
