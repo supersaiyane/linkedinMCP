@@ -87,11 +87,28 @@ export class LinkedInAPIClient {
       };
     }
 
-    const response = await this.client.post(
-      LINKEDIN_API.ENDPOINTS.POSTS,
-      body,
-      { headers: { Authorization: `Bearer ${token.accessToken}` } },
-    );
+    let response;
+    try {
+      response = await this.client.post(
+        LINKEDIN_API.ENDPOINTS.POSTS,
+        body,
+        { headers: { Authorization: `Bearer ${token.accessToken}` } },
+      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        this.logger.error({
+          status: err.response.status,
+          headers: err.response.headers,
+          data: err.response.data,
+        }, "LinkedIn createPost failed");
+        throw new LinkedInAPIError(
+          err.response.status,
+          JSON.stringify(err.response.data),
+          err.response.data,
+        );
+      }
+      throw err;
+    }
 
     this.rateLimiter.recordRequest("posts");
     this.rateLimiter.recordRequest("api");
@@ -139,11 +156,28 @@ export class LinkedInAPIClient {
       content: { article: articleContent },
     };
 
-    const response = await this.client.post(
-      LINKEDIN_API.ENDPOINTS.POSTS,
-      body,
-      { headers: { Authorization: `Bearer ${token.accessToken}` } },
-    );
+    let response;
+    try {
+      response = await this.client.post(
+        LINKEDIN_API.ENDPOINTS.POSTS,
+        body,
+        { headers: { Authorization: `Bearer ${token.accessToken}` } },
+      );
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        this.logger.error({
+          status: err.response.status,
+          headers: err.response.headers,
+          data: err.response.data,
+        }, "LinkedIn createArticlePost failed");
+        throw new LinkedInAPIError(
+          err.response.status,
+          JSON.stringify(err.response.data),
+          err.response.data,
+        );
+      }
+      throw err;
+    }
 
     this.rateLimiter.recordRequest("posts");
     this.rateLimiter.recordRequest("api");

@@ -22,6 +22,8 @@ import {
   schedulePostHandler,
   listScheduledSchema,
   listScheduledHandler,
+  cancelScheduledSchema,
+  cancelScheduledHandler,
   mediumPublishSchema,
   mediumPublishHandler,
   mediumProfileSchema,
@@ -160,6 +162,19 @@ export class LinkedInMCPServer {
         async (args): Promise<ToolResult> => {
           try {
             return await listScheduledHandler(args, { scheduler, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
+
+      this.server.tool(
+        "linkedin_cancel_scheduled",
+        "Cancel a pending scheduled post by ID. Use linkedin_list_scheduled to find IDs.",
+        cancelScheduledSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await cancelScheduledHandler(args, { scheduler, logger }) as ToolResult;
           } catch (err) {
             return makeErrorResult(err);
           }

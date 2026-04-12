@@ -5,5 +5,6 @@ export { uploadMediaSchema, uploadMediaHandler } from "./upload-media.tool.js";
 export { getProfileSchema, getProfileHandler } from "./get-profile.tool.js";
 export { schedulePostSchema, schedulePostHandler } from "./schedule-post.tool.js";
 export { listScheduledSchema, listScheduledHandler } from "./list-scheduled.tool.js";
+export { cancelScheduledSchema, cancelScheduledHandler } from "./cancel-scheduled.tool.js";
 export { mediumPublishSchema, mediumPublishHandler } from "./medium-publish.tool.js";
 export { mediumProfileSchema, mediumProfileHandler } from "./medium-profile.tool.js";
