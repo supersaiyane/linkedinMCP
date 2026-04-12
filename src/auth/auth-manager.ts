@@ -18,6 +18,8 @@ export class AuthManager {
     private redirectUri: string,
     private tokenStore: TokenStore,
     private logger: Logger,
+    private scopes: readonly string[] = LINKEDIN_API.SCOPES,
+    private callbackPort: number = LINKEDIN_API.CALLBACK_PORT,
   ) {}
 
   async getValidToken(): Promise<OAuthToken> {
@@ -49,7 +51,7 @@ export class AuthManager {
       response_type: "code",
       client_id: this.clientId,
       redirect_uri: this.redirectUri,
-      scope: LINKEDIN_API.SCOPES.join(" "),
+      scope: this.scopes.join(" "),
       state,
     });
     return {
@@ -62,7 +64,7 @@ export class AuthManager {
     openBrowser: (url: string) => Promise<void>,
   ): Promise<OAuthToken> {
     const { url, state } = this.generateAuthUrl();
-    const callbackPort = LINKEDIN_API.CALLBACK_PORT;
+    const callbackPort = this.callbackPort;
 
     const { promise, close } = startCallbackServer(
       callbackPort,

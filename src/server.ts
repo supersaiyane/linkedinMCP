@@ -10,6 +10,8 @@ import type { TelegramNotifier } from "./services/telegram-notifier.js";
 import {
   authenticateSchema,
   authenticateHandler,
+  authenticateCommunitySchema,
+  authenticateCommunityHandler,
   createPostSchema,
   createPostHandler,
   publishArticleSchema,
@@ -52,6 +54,8 @@ import { LinkedInMCPError } from "./models/errors.js";
 interface ServerDeps {
   authManager: AuthManager;
   apiClient: LinkedInAPIClient;
+  communityAuthManager: AuthManager | null;
+  communityApiClient: LinkedInAPIClient | null;
   mediumClient: MediumClient | null;
   contentFormatter: ContentFormatter;
   mediaHandler: MediaHandler;
@@ -92,7 +96,7 @@ export class LinkedInMCPServer {
   }
 
   private registerTools(): void {
-    const { authManager, apiClient, mediumClient, contentFormatter, mediaHandler, scheduler, notifier, openBrowser, logger } = this.deps;
+    const { authManager, apiClient, communityAuthManager, communityApiClient, mediumClient, contentFormatter, mediaHandler, scheduler, notifier, openBrowser, logger } = this.deps;
 
     // ═══ Authentication ═══
     this.server.tool(
@@ -189,45 +193,73 @@ export class LinkedInMCPServer {
       },
     );
 
-    // ═══ Engagement ═══
-    this.server.tool(
-      "linkedin_like_post",
-      "Like a LinkedIn post.",
-      likePostSchema,
-      async (args): Promise<ToolResult> => {
-        try {
-          return await likePostHandler(args, { apiClient, logger }) as ToolResult;
-        } catch (err) {
-          return makeErrorResult(err);
-        }
-      },
-    );
+    // ═══ Engagement (requires Community Management API app) ═══
+    if (communityApiClient && communityAuthManager) {
+      this.server.tool(
+        "linkedin_authenticate_community",
+        "Authenticate with the Community Management API (separate LinkedIn app). Required for reading comments, post stats, and replying.",
+        authenticateCommunitySchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await authenticateCommunityHandler(args, { communityAuthManager, openBrowser, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
 
-    this.server.tool(
-      "linkedin_get_comments",
-      "Get comments on a LinkedIn post.",
-      getCommentsSchema,
-      async (args): Promise<ToolResult> => {
-        try {
-          return await getCommentsHandler(args, { apiClient, logger }) as ToolResult;
-        } catch (err) {
-          return makeErrorResult(err);
-        }
-      },
-    );
+      this.server.tool(
+        "linkedin_like_post",
+        "Like a LinkedIn post.",
+        likePostSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await likePostHandler(args, { apiClient: communityApiClient, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
 
-    this.server.tool(
-      "linkedin_reply_to_comment",
-      "Reply to a comment on a LinkedIn post.",
-      replyToCommentSchema,
-      async (args): Promise<ToolResult> => {
-        try {
-          return await replyToCommentHandler(args, { apiClient, logger }) as ToolResult;
-        } catch (err) {
-          return makeErrorResult(err);
-        }
-      },
-    );
+      this.server.tool(
+        "linkedin_get_comments",
+        "Get comments on a LinkedIn post. Requires Community Management API authentication.",
+        getCommentsSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await getCommentsHandler(args, { apiClient: communityApiClient, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
+
+      this.server.tool(
+        "linkedin_reply_to_comment",
+        "Reply to a comment on a LinkedIn post. Requires Community Management API authentication.",
+        replyToCommentSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await replyToCommentHandler(args, { apiClient: communityApiClient, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
+
+      this.server.tool(
+        "linkedin_get_post_stats",
+        "Get analytics for a LinkedIn post: likes, comments, shares. Requires Community Management API authentication.",
+        getPostStatsSchema,
+        async (args): Promise<ToolResult> => {
+          try {
+            return await getPostStatsHandler(args, { apiClient: communityApiClient, logger }) as ToolResult;
+          } catch (err) {
+            return makeErrorResult(err);
+          }
+        },
+      );
+    }
 
     // ═══ Analytics ═══
     this.server.tool(
@@ -250,19 +282,6 @@ export class LinkedInMCPServer {
       async (args): Promise<ToolResult> => {
         try {
           return await getProfileStatsHandler(args, { apiClient, logger }) as ToolResult;
-        } catch (err) {
-          return makeErrorResult(err);
-        }
-      },
-    );
-
-    this.server.tool(
-      "linkedin_get_post_stats",
-      "Get analytics for a LinkedIn post: impressions, likes, comments, shares, clicks.",
-      getPostStatsSchema,
-      async (args): Promise<ToolResult> => {
-        try {
-          return await getPostStatsHandler(args, { apiClient, logger }) as ToolResult;
         } catch (err) {
           return makeErrorResult(err);
         }

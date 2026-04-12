@@ -73,6 +73,30 @@ async function main(): Promise<void> {
     }
   }
 
+  // Community Management API app (optional — separate LinkedIn app for engagement tools)
+  let communityAuthManager: AuthManager | null = null;
+  let communityApiClient: LinkedInAPIClient | null = null;
+  if (config.LINKEDIN_COMMUNITY_CLIENT_ID && config.LINKEDIN_COMMUNITY_CLIENT_SECRET) {
+    const { LINKEDIN_API: LI_API } = await import("./config/linkedin-api.js");
+    const communityTokenStore: TokenStore =
+      new FileTokenStore(
+        resolveProjectPath(config.COMMUNITY_TOKEN_STORE_PATH),
+        config.TOKEN_ENCRYPTION_KEY,
+        logger,
+      );
+    communityAuthManager = new AuthManager(
+      config.LINKEDIN_COMMUNITY_CLIENT_ID,
+      config.LINKEDIN_COMMUNITY_CLIENT_SECRET,
+      config.LINKEDIN_COMMUNITY_REDIRECT_URI,
+      communityTokenStore,
+      logger,
+      LI_API.COMMUNITY_SCOPES,
+      LI_API.COMMUNITY_CALLBACK_PORT,
+    );
+    communityApiClient = new LinkedInAPIClient(communityAuthManager, rateLimiter, logger);
+    logger.info("Community Management API integration enabled");
+  }
+
   // Medium client (optional)
   let mediumClient: MediumClient | null = null;
   if (config.MEDIUM_INTEGRATION_TOKEN) {
@@ -84,6 +108,8 @@ async function main(): Promise<void> {
   const mcpServer = new LinkedInMCPServer({
     authManager,
     apiClient,
+    communityAuthManager,
+    communityApiClient,
     mediumClient,
     contentFormatter,
     mediaHandler,

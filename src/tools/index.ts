@@ -1,4 +1,5 @@
 export { authenticateSchema, authenticateHandler } from "./authenticate.tool.js";
+export { authenticateCommunitySchema, authenticateCommunityHandler } from "./authenticate-community.tool.js";
 export { createPostSchema, createPostHandler } from "./create-post.tool.js";
 export { publishArticleSchema, publishArticleHandler } from "./publish-article.tool.js";
 export { uploadMediaSchema, uploadMediaHandler } from "./upload-media.tool.js";

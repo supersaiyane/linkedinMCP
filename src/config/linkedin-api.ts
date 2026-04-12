@@ -5,18 +5,21 @@ export const LINKEDIN_API = {
 
   VERSION: "202601",
 
-  // Personal profile scopes only.
-  // r_member_social: required for reading comments, likes, and engagement data.
-  // w_member_social: required for posting, commenting, liking.
-  // r_liteprofile is deprecated — openid+profile replaces it.
-  // Organization scopes (r_organization_social, w_organization_social) require
-  // Company Page admin access and separate LinkedIn app approval — not included here.
+  // Primary app scopes (Share on LinkedIn + Sign In with LinkedIn products)
   SCOPES: [
     "openid",
     "profile",
     "w_member_social",
-    "r_member_social",
   ],
+
+  // Community Management API app scopes (separate app — this product must be the only one)
+  // Grants access to: socialActions (read comments, post stats, reply)
+  COMMUNITY_SCOPES: [
+    "r_member_social",
+    "w_member_social",
+  ],
+
+  COMMUNITY_CALLBACK_PORT: 3457,
 
   ENDPOINTS: {
     ME: "/v2/userinfo",

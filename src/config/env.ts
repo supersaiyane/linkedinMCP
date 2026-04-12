@@ -34,6 +34,12 @@ const EnvSchema = z.object({
 
   // Medium integration (optional)
   MEDIUM_INTEGRATION_TOKEN: z.string().optional(),
+
+  // Community Management API app (optional — separate LinkedIn app for engagement tools)
+  LINKEDIN_COMMUNITY_CLIENT_ID: z.string().optional(),
+  LINKEDIN_COMMUNITY_CLIENT_SECRET: z.string().optional(),
+  LINKEDIN_COMMUNITY_REDIRECT_URI: z.string().url().default("http://localhost:3457/callback"),
+  COMMUNITY_TOKEN_STORE_PATH: z.string().default("./data/community-tokens.enc"),
 });
 
 export type EnvConfig = z.infer<typeof EnvSchema>;
