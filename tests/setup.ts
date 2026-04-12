@@ -42,20 +42,17 @@ export const handlers = [
     });
   }),
 
-  // Share statistics (post stats)
-  http.get("https://api.linkedin.com/rest/organizationalEntityShareStatistics", () => {
+  // Social actions (post stats) — GET /rest/socialActions/{urn}
+  http.get("https://api.linkedin.com/rest/socialActions/:urn", ({ params }) => {
+    // If the URL ends with /comments or /likes, let those specific handlers match
+    const urn = params.urn as string;
+    if (urn.includes("/")) {
+      return HttpResponse.json({});
+    }
     return HttpResponse.json({
-      elements: [
-        {
-          totalShareStatistics: {
-            impressionCount: 1250,
-            likeCount: 42,
-            commentCount: 8,
-            shareCount: 5,
-            clickCount: 73,
-          },
-        },
-      ],
+      likesSummary: { totalLikes: 42 },
+      commentsSummary: { totalFirstLevelComments: 8 },
+      numShares: 5,
     });
   }),
 

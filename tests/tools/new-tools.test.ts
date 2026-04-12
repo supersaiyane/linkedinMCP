@@ -61,11 +61,9 @@ describe("linkedin_get_post_stats", () => {
       { apiClient, logger: mockLogger },
     );
 
-    expect(result.content[0].text).toContain("Impressions: 1250");
     expect(result.content[0].text).toContain("Likes: 42");
     expect(result.content[0].text).toContain("Comments: 8");
     expect(result.content[0].text).toContain("Shares: 5");
-    expect(result.content[0].text).toContain("Clicks: 73");
   });
 });
 

@@ -15,20 +15,26 @@ export async function getPostStatsHandler(
   const stats = await apiClient.getPostStats(args.post_urn);
   logger.info({ postUrn: args.post_urn }, "Post stats fetched");
 
+  const lines = [
+    `📊 Post Stats for ${args.post_urn}`,
+    "",
+    `👍 Likes: ${stats.likes}`,
+    `💬 Comments: ${stats.comments}`,
+    `🔄 Shares: ${stats.shares}`,
+  ];
+
+  if (stats.impressions > 0) {
+    lines.push(`👁️ Impressions: ${stats.impressions}`);
+  }
+  if (stats.clicks > 0) {
+    lines.push(`🖱️ Clicks: ${stats.clicks}`);
+  }
+  if (stats.impressions === 0 && stats.clicks === 0) {
+    lines.push("");
+    lines.push("Note: Impressions and clicks are only available for Company Page posts (Marketing API).");
+  }
+
   return {
-    content: [
-      {
-        type: "text" as const,
-        text: [
-          `📊 Post Stats for ${args.post_urn}`,
-          "",
-          `👁️ Impressions: ${stats.impressions}`,
-          `👍 Likes: ${stats.likes}`,
-          `💬 Comments: ${stats.comments}`,
-          `🔄 Shares: ${stats.shares}`,
-          `🖱️ Clicks: ${stats.clicks}`,
-        ].join("\n"),
-      },
-    ],
+    content: [{ type: "text" as const, text: lines.join("\n") }],
   };
 }

@@ -257,28 +257,24 @@ export class LinkedInAPIClient {
   async getPostStats(postUrn: string): Promise<PostStats> {
     this.rateLimiter.checkLimit("api");
     const headers = await this.authHeaders();
-    const author = await this.getMemberUrn();
 
+    // Use /socialActions/{urn} for personal post stats.
+    // The /organizationalEntityShareStatistics endpoint is for Company Pages only.
     try {
       const response = await this.client.get(
-        `${LINKEDIN_API.ENDPOINTS.SHARE_STATISTICS}?q=organizationalEntity&organizationalEntity=${encodeURIComponent(author)}&shares[0]=${encodeURIComponent(postUrn)}`,
+        `${LINKEDIN_API.ENDPOINTS.SOCIAL_ACTIONS}/${encodeURIComponent(postUrn)}`,
         { headers },
       );
 
       this.rateLimiter.recordRequest("api");
 
-      const elements = response.data?.elements ?? [];
-      if (elements.length === 0) {
-        return { impressions: 0, likes: 0, comments: 0, shares: 0, clicks: 0 };
-      }
-
-      const stats = elements[0]?.totalShareStatistics ?? {};
+      const data = response.data ?? {};
       return {
-        impressions: stats.impressionCount ?? 0,
-        likes: stats.likeCount ?? 0,
-        comments: stats.commentCount ?? 0,
-        shares: stats.shareCount ?? 0,
-        clicks: stats.clickCount ?? 0,
+        likes: data.likesSummary?.totalLikes ?? data.numLikes ?? 0,
+        comments: data.commentsSummary?.totalFirstLevelComments ?? data.numComments ?? 0,
+        shares: data.numShares ?? 0,
+        impressions: 0,  // Not available via socialActions — requires Marketing API
+        clicks: 0,       // Not available via socialActions — requires Marketing API
       };
     } catch (err: unknown) {
       this.handleApiError(err, "getPostStats");

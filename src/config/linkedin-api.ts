@@ -5,14 +5,17 @@ export const LINKEDIN_API = {
 
   VERSION: "202601",
 
+  // Personal profile scopes only.
+  // r_member_social: required for reading comments, likes, and engagement data.
+  // w_member_social: required for posting, commenting, liking.
+  // r_liteprofile is deprecated — openid+profile replaces it.
+  // Organization scopes (r_organization_social, w_organization_social) require
+  // Company Page admin access and separate LinkedIn app approval — not included here.
   SCOPES: [
     "openid",
     "profile",
     "w_member_social",
     "r_member_social",
-    "r_liteprofile",
-    "r_organization_social",
-    "w_organization_social",
   ],
 
   ENDPOINTS: {
@@ -21,8 +24,8 @@ export const LINKEDIN_API = {
     IMAGES_INIT: "/rest/images?action=initializeUpload",
     DOCUMENTS_INIT: "/rest/documents?action=initializeUpload",
     SOCIAL_ACTIONS: "/rest/socialActions",
+    SOCIAL_METADATA: "/rest/socialMetadata",
     NETWORK_SIZES: "/rest/networkSizes",
-    SHARE_STATISTICS: "/rest/organizationalEntityShareStatistics",
   },
 
   DEFAULT_HEADERS: {
