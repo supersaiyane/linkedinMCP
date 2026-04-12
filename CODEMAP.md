@@ -11,7 +11,7 @@
 - **Stack:** Node.js 20+ / TypeScript 5.4+ / ESM (`"type": "module"`)
 - **Purpose:** MCP server connecting Claude Desktop to LinkedIn, Medium, and Telegram
 - **Transport:** stdio (primary) + SSE HTTP (secondary)
-- **Total source:** ~2710 lines across 33 files
+- **Total source:** ~2750 lines across 34 files
 - **Tests:** 31 passing (4 test files, ~418 lines)
 - **Build:** `tsc` compiles clean (`npx tsc --noEmit` = 0 errors)
 
@@ -24,7 +24,7 @@
 | File | Lines | Purpose |
 |------|-------|---------|
 | `index.ts` | 142 | Entry point — CLI args, DI wiring, transport setup, graceful shutdown |
-| `server.ts` | 198 | `LinkedInMCPServer` — registers 9 tools via `McpServer.tool()` |
+| `server.ts` | 213 | `LinkedInMCPServer` — registers 10 tools via `McpServer.tool()` |
 
 ### Config (`src/config/`)
 
@@ -45,27 +45,42 @@
 
 ### API Clients (`src/api/`)
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `linkedin-client.ts` | 236 | `LinkedInAPIClient` — getUserProfile, createPost, publishArticle, initializeImageUpload, uploadImageBinary |
-| `medium-client.ts` | 78 | Medium API client — getUser, createPost |
-| `rate-limiter.ts` | 48 | Sliding window rate limiter (posts/day + api/minute) |
-| `retry.ts` | 83 | Axios interceptor — retry on 429/5xx with exponential backoff |
+| File | Lines | Purpose | Methods |
+|------|-------|---------|---------|
+| `linkedin-client.ts` | 236 | LinkedIn REST API v2 client | getUserProfile, createPost, publishArticle, initializeImageUpload, uploadImageBinary |
+| `medium-client.ts` | 78 | Medium API client | getUser, createPost |
+| `rate-limiter.ts` | 48 | Sliding window rate limiter | checkLimit, recordRequest (posts/day + api/minute) |
+| `retry.ts` | 83 | Axios interceptor | retry on 429/5xx with exponential backoff + jitter |
 
-### Tools (`src/tools/`) — 9 MCP tools registered
+### Tools (`src/tools/`) — 10 MCP tools registered
 
-| File | Lines | Tool Name | Description |
-|------|-------|-----------|-------------|
-| `authenticate.tool.ts` | 53 | `linkedin_authenticate` | OAuth flow, opens browser, stores tokens |
-| `create-post.tool.ts` | 67 | `linkedin_create_post` | Text post with hashtags + visibility |
-| `publish-article.tool.ts` | 80 | `linkedin_publish_article` | Article with source URL + optional cover image |
-| `upload-media.tool.ts` | 39 | `linkedin_upload_media` | Image upload, returns URN |
-| `get-profile.tool.ts` | 31 | `linkedin_get_profile` | Fetch authenticated user's profile |
-| `schedule-post.tool.ts` | 64 | `linkedin_schedule_post` | Queue post for future publication |
-| `list-scheduled.tool.ts` | 44 | `linkedin_list_scheduled` | List scheduled posts by status |
-| `medium-publish.tool.ts` | 67 | `medium_publish_article` | Publish article to Medium |
-| `medium-profile.tool.ts` | 28 | `medium_get_profile` | Fetch Medium user profile |
-| `index.ts` | 9 | — | Re-exports all tool schemas + handlers |
+| File | Lines | Tool Name | Description | Status |
+|------|-------|-----------|-------------|--------|
+| `authenticate.tool.ts` | 53 | `linkedin_authenticate` | OAuth flow, opens browser, stores tokens | DONE |
+| `create-post.tool.ts` | 67 | `linkedin_create_post` | Text post with hashtags + visibility | DONE |
+| `publish-article.tool.ts` | 80 | `linkedin_publish_article` | Article with source URL + optional cover image | DONE |
+| `upload-media.tool.ts` | 39 | `linkedin_upload_media` | Image upload, returns URN | DONE |
+| `get-profile.tool.ts` | 31 | `linkedin_get_profile` | Fetch authenticated user's profile | DONE |
+| `schedule-post.tool.ts` | 64 | `linkedin_schedule_post` | Queue post for future publication | DONE |
+| `list-scheduled.tool.ts` | 44 | `linkedin_list_scheduled` | List scheduled posts by status | DONE |
+| `cancel-scheduled.tool.ts` | 27 | `linkedin_cancel_scheduled` | Cancel a pending scheduled post by ID | DONE |
+| `medium-publish.tool.ts` | 67 | `medium_publish_article` | Publish article to Medium | DONE |
+| `medium-profile.tool.ts` | 28 | `medium_get_profile` | Fetch Medium user profile | DONE |
+| `index.ts` | 10 | — | Re-exports all tool schemas + handlers | — |
+
+### Tools — PLANNED (not yet implemented)
+
+| Tool Name | Description | Needs |
+|-----------|-------------|-------|
+| `linkedin_get_post_stats` | Get impressions, likes, comments, shares, clicks for a post | API method + tool |
+| `linkedin_get_comments` | Read comments on a post | API method + tool |
+| `linkedin_reply_to_comment` | Reply to a specific comment | API method + tool |
+| `linkedin_delete_post` | Delete a published post | API method + tool |
+| `linkedin_create_post_with_image` | Single tool: upload image + create post in one step | Tool (API methods exist) |
+| `linkedin_get_profile_stats` | Get followers, profile views, search appearances | API method + tool |
+| `linkedin_edit_post` | Edit/update an existing post | API method + tool |
+| `linkedin_like_post` | Like a post | API method + tool |
+| `linkedin_search_posts` | Search posts by keyword/hashtag | API method + tool |
 
 ### Services (`src/services/`)
 
@@ -81,7 +96,7 @@
 | File | Lines | Purpose |
 |------|-------|---------|
 | `schemas.ts` | 69 | Zod schemas: OAuthToken, PostContent, ArticleContent, UserProfile, PostResult, ScheduledPost, LinkedIn API responses |
-| `errors.ts` | 89 | Error hierarchy: LinkedInMCPError base, AuthenticationError, RateLimitError, LinkedInAPIError, ContentValidationError, etc. |
+| `errors.ts` | 89 | Error hierarchy: LinkedInMCPError base → AuthenticationError, RateLimitError, LinkedInAPIError, ContentValidationError, etc. |
 | `types.ts` | 16 | Type re-exports inferred from zod schemas |
 
 ### Utils (`src/utils/`)
@@ -108,33 +123,38 @@
 
 | File needed | Priority | What to test |
 |-------------|----------|--------------|
-| `tests/api/linkedin-client.test.ts` | HIGH | Post creation, profile fetch, image upload, error responses (401/403/429/500) |
-| `tests/auth/auth-manager.test.ts` | MEDIUM | Auth URL generation, code exchange, token refresh, expired token |
-| `tests/tools/create-post.test.ts` | HIGH | Input validation, mock API, output format |
-| `tests/tools/publish-article.test.ts` | HIGH | Article with/without URL, cover image |
-| `tests/tools/schedule-post.test.ts` | HIGH | Future date validation, scheduling flow |
+| `tests/api/linkedin-client.test.ts` | HIGH | Post creation, profile fetch, image upload, error responses |
+| `tests/auth/auth-manager.test.ts` | MEDIUM | Auth URL generation, code exchange, token refresh |
+| `tests/tools/*.test.ts` | HIGH | Input validation, mock API, output format for each tool |
+
+---
+
+## OAuth Scopes
+
+### Current
+
+`openid`, `profile`, `w_member_social`
+
+### Needed (for planned tools)
+
+`r_liteprofile`, `r_organization_social`, `r_member_social`, `w_organization_social`
 
 ---
 
 ## Build & Config Files
 
-| File | Purpose |
-|------|---------|
-| `package.json` | ESM project, scripts: build/dev/test/lint/typecheck |
-| `tsconfig.json` | ES2022, NodeNext modules, strict mode |
-| `vitest.config.ts` | Test runner config |
-| `Dockerfile` | Multi-stage build (node:20-slim) |
-| `docker-compose.yml` | Container orchestration with env file |
-| `Makefile` | install, build, dev, test, lint, typecheck, docker-build, docker-run, check |
-| `.env.example` | Template for all env vars |
-| `.gitignore` | data/, node_modules/, dist/, .env |
-
-### Missing Config Files
-
-| File needed | Priority |
-|-------------|----------|
-| `.eslintrc.cjs` or `eslint.config.js` | HIGH — `npm run lint` will fail |
-| `.prettierrc` | HIGH — no formatting config |
+| File | Status | Purpose |
+|------|--------|---------|
+| `package.json` | DONE | ESM project, scripts: build/dev/test/lint/typecheck |
+| `tsconfig.json` | DONE | ES2022, NodeNext modules, strict mode |
+| `vitest.config.ts` | DONE | Test runner config |
+| `Dockerfile` | DONE | Multi-stage build (node:20-slim) |
+| `docker-compose.yml` | DONE | Container orchestration with env file |
+| `Makefile` | DONE | install, build, dev, test, lint, typecheck, docker-build, docker-run, check |
+| `.env.example` | DONE | Template for all env vars |
+| `.gitignore` | DONE | data/, node_modules/, dist/, .env |
+| `.eslintrc.cjs` | MISSING | ESLint config — `npm run lint` will fail |
+| `.prettierrc` | MISSING | Prettier formatting config |
 
 ---
 
@@ -153,8 +173,4 @@ Home, Getting-Started, Installation, Quick-Start-Guide, LinkedIn-App-Setup, Medi
 5. **Two-step image upload** — initialize (get URL+URN) then PUT binary
 6. **Token encryption** — AES-256-GCM with key derived via SHA-256
 7. **ESM imports** — all relative imports use `.js` extension
-
-## Unstaged Changes
-
-- `src/api/linkedin-client.ts` — API version update + expanded methods
-- `src/config/linkedin-api.ts` — version `202401` → `202603`
+8. **One file, one tool** — each MCP tool is a separate `.tool.ts` file with exported schema + handler
