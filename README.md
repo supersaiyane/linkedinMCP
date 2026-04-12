@@ -664,7 +664,7 @@ See [Contributing](wiki/Contributing.md) for code guidelines and how to add new 
 | "Directory does not exist" | Create manually: `mkdir -p data` |
 | Posts fail with 403 | Enable "Share on LinkedIn" product in your developer app |
 | Posts fail with 426 | LinkedIn API version may need updating -- check `src/config/linkedin-api.ts` |
-| Comments/stats fail with 403 | You may need additional scopes -- re-authenticate after updating |
+| Comments/stats fail with 403 | Enable **Community Management API** product in LinkedIn Developer Portal (Products tab). This is separate from OAuth scopes. May take 24-48h for approval. Re-authenticate after. |
 | "Not authenticated" | Say "Authenticate with LinkedIn" in Claude Desktop |
 | Token expired | Auto-refreshes. If refresh fails, re-authenticate |
 | Claude Desktop no tools | Verify absolute path in config, run `npm run build`, restart Claude Desktop |

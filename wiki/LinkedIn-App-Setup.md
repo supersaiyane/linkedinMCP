@@ -65,8 +65,11 @@ Go to the **"Products"** tab. Request access to both of these products:
 |---------|---------------|---------|
 | **Share on LinkedIn** | `w_member_social` | Required for creating posts, publishing articles, and uploading media |
 | **Sign In with LinkedIn using OpenID Connect** | `openid`, `profile` | Required for reading your profile info and obtaining your member URN |
+| **Community Management API** | `r_member_social` | Required for reading comments, post stats, and replying to comments |
 
-Click **"Request access"** for each one. Both products are typically approved within seconds. Once approved, they appear under "Added products" on the same tab.
+Click **"Request access"** for each one. "Share on LinkedIn" and "Sign In" are typically approved within seconds. **Community Management API** may take up to 24-48 hours for approval. Once approved, they appear under "Added products" on the same tab.
+
+> **Without Community Management API**, the following tools will return 403 errors: `linkedin_get_post_stats`, `linkedin_get_comments`, `linkedin_reply_to_comment`. All other tools (posting, scheduling, deleting, editing, liking) work without it.
 
 ### 5. Copy Your Credentials
 
@@ -84,7 +87,7 @@ Click **"Show"** next to the Client Secret to reveal it, then copy the full valu
 After completing all steps, your Auth tab should display:
 
 ```
-OAuth 2.0 scopes: openid, profile, w_member_social
+OAuth 2.0 scopes: openid, profile, w_member_social, r_member_social
 Authorized redirect URLs: http://localhost:3456/callback
 ```
 
@@ -97,6 +100,10 @@ If either is missing, revisit the relevant step above.
 ### "w_member_social scope not available"
 
 The "Share on LinkedIn" product has not been approved for your app. Go to the Products tab, confirm you requested it, and wait for approval. If it shows "Review in progress" for more than 24 hours, check that your LinkedIn Page meets LinkedIn's minimum requirements (a Page name, logo, and at least one admin).
+
+### 403 "Not enough permissions to access: partnerApiSocialActions"
+
+The **Community Management API** product has not been approved for your app. This is required for reading comments, post stats, and replying. Go to the Products tab, request access to "Community Management API", and wait for approval (may take 24-48 hours). After approval, re-authenticate in Claude Desktop to get a token with the new permissions.
 
 ### "Invalid redirect URI" during authentication
 
