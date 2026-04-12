@@ -8,3 +8,12 @@ export { listScheduledSchema, listScheduledHandler } from "./list-scheduled.tool
 export { cancelScheduledSchema, cancelScheduledHandler } from "./cancel-scheduled.tool.js";
 export { mediumPublishSchema, mediumPublishHandler } from "./medium-publish.tool.js";
 export { mediumProfileSchema, mediumProfileHandler } from "./medium-profile.tool.js";
+export { getPostStatsSchema, getPostStatsHandler } from "./get-post-stats.tool.js";
+export { getCommentsSchema, getCommentsHandler } from "./get-comments.tool.js";
+export { replyToCommentSchema, replyToCommentHandler } from "./reply-to-comment.tool.js";
+export { deletePostSchema, deletePostHandler } from "./delete-post.tool.js";
+export { createPostWithImageSchema, createPostWithImageHandler } from "./create-post-with-image.tool.js";
+export { getProfileStatsSchema, getProfileStatsHandler } from "./get-profile-stats.tool.js";
+export { editPostSchema, editPostHandler } from "./edit-post.tool.js";
+export { likePostSchema, likePostHandler } from "./like-post.tool.js";
+export { searchPostsSchema, searchPostsHandler } from "./search-posts.tool.js";

@@ -5,13 +5,24 @@ export const LINKEDIN_API = {
 
   VERSION: "202601",
 
-  SCOPES: ["openid", "profile", "w_member_social"],
+  SCOPES: [
+    "openid",
+    "profile",
+    "w_member_social",
+    "r_member_social",
+    "r_liteprofile",
+    "r_organization_social",
+    "w_organization_social",
+  ],
 
   ENDPOINTS: {
     ME: "/v2/userinfo",
     POSTS: "/rest/posts",
     IMAGES_INIT: "/rest/images?action=initializeUpload",
     DOCUMENTS_INIT: "/rest/documents?action=initializeUpload",
+    SOCIAL_ACTIONS: "/rest/socialActions",
+    NETWORK_SIZES: "/rest/networkSizes",
+    SHARE_STATISTICS: "/rest/organizationalEntityShareStatistics",
   },
 
   DEFAULT_HEADERS: {

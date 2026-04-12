@@ -11,7 +11,7 @@
 - **Stack:** Node.js 20+ / TypeScript 5.4+ / ESM (`"type": "module"`)
 - **Purpose:** MCP server connecting Claude Desktop to LinkedIn, Medium, and Telegram
 - **Transport:** stdio (primary) + SSE HTTP (secondary)
-- **Total source:** ~2750 lines across 34 files
+- **Total source:** ~3400 lines across 43 files
 - **Tests:** 31 passing (4 test files, ~418 lines)
 - **Build:** `tsc` compiles clean (`npx tsc --noEmit` = 0 errors)
 
@@ -24,14 +24,14 @@
 | File | Lines | Purpose |
 |------|-------|---------|
 | `index.ts` | 142 | Entry point — CLI args, DI wiring, transport setup, graceful shutdown |
-| `server.ts` | 213 | `LinkedInMCPServer` — registers 10 tools via `McpServer.tool()` |
+| `server.ts` | 356 | `LinkedInMCPServer` — registers 19 tools via `McpServer.tool()` |
 
 ### Config (`src/config/`)
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `env.ts` | 51 | Zod schema validating all env vars at startup (LinkedIn, tokens, scheduler, rate limits) |
-| `linkedin-api.ts` | 38 | All LinkedIn API constants: URLs, version (`202603`), endpoints, headers, limits |
+| `env.ts` | 51 | Zod schema validating all env vars at startup |
+| `linkedin-api.ts` | 50 | All LinkedIn API constants: URLs, version (`202601`), endpoints, headers, limits, scopes |
 
 ### Auth (`src/auth/`)
 
@@ -45,42 +45,84 @@
 
 ### API Clients (`src/api/`)
 
-| File | Lines | Purpose | Methods |
-|------|-------|---------|---------|
-| `linkedin-client.ts` | 236 | LinkedIn REST API v2 client | getUserProfile, createPost, publishArticle, initializeImageUpload, uploadImageBinary |
-| `medium-client.ts` | 78 | Medium API client | getUser, createPost |
-| `rate-limiter.ts` | 48 | Sliding window rate limiter | checkLimit, recordRequest (posts/day + api/minute) |
-| `retry.ts` | 83 | Axios interceptor | retry on 429/5xx with exponential backoff + jitter |
+| File | Lines | Purpose |
+|------|-------|---------|
+| `linkedin-client.ts` | 431 | LinkedIn REST API v2 client — all methods below |
+| `medium-client.ts` | 78 | Medium API client — getUser, createPost |
+| `rate-limiter.ts` | 48 | Sliding window rate limiter (posts/day + api/minute) |
+| `retry.ts` | 83 | Axios interceptor — retry on 429/5xx with exponential backoff |
 
-### Tools (`src/tools/`) — 10 MCP tools registered
+**LinkedInAPIClient methods:**
 
-| File | Lines | Tool Name | Description | Status |
-|------|-------|-----------|-------------|--------|
-| `authenticate.tool.ts` | 53 | `linkedin_authenticate` | OAuth flow, opens browser, stores tokens | DONE |
-| `create-post.tool.ts` | 67 | `linkedin_create_post` | Text post with hashtags + visibility | DONE |
-| `publish-article.tool.ts` | 80 | `linkedin_publish_article` | Article with source URL + optional cover image | DONE |
-| `upload-media.tool.ts` | 39 | `linkedin_upload_media` | Image upload, returns URN | DONE |
-| `get-profile.tool.ts` | 31 | `linkedin_get_profile` | Fetch authenticated user's profile | DONE |
-| `schedule-post.tool.ts` | 64 | `linkedin_schedule_post` | Queue post for future publication | DONE |
-| `list-scheduled.tool.ts` | 44 | `linkedin_list_scheduled` | List scheduled posts by status | DONE |
-| `cancel-scheduled.tool.ts` | 27 | `linkedin_cancel_scheduled` | Cancel a pending scheduled post by ID | DONE |
-| `medium-publish.tool.ts` | 67 | `medium_publish_article` | Publish article to Medium | DONE |
-| `medium-profile.tool.ts` | 28 | `medium_get_profile` | Fetch Medium user profile | DONE |
-| `index.ts` | 10 | — | Re-exports all tool schemas + handlers | — |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `getUserProfile()` | GET /v2/userinfo | Fetch authenticated user profile |
+| `getMemberUrn()` | (cached) | Get urn:li:person:{sub} |
+| `createPost(content)` | POST /rest/posts | Create text/media post |
+| `createArticlePost(input)` | POST /rest/posts | Create article-style post |
+| `initializeImageUpload()` | POST /rest/images?action=initializeUpload | Get upload URL + image URN |
+| `uploadImageBinary(url, data, mime)` | PUT {uploadUrl} | Upload raw image binary |
+| `getPostStats(postUrn)` | GET /rest/organizationalEntityShareStatistics | Impressions, likes, comments, shares, clicks |
+| `getComments(postUrn, count)` | GET /rest/socialActions/{urn}/comments | Read comments on a post |
+| `replyToComment(postUrn, commentUrn, text)` | POST /rest/socialActions/{urn}/comments | Reply to a comment |
+| `deletePost(postUrn)` | DELETE /rest/posts/{urn} | Delete a post |
+| `editPost(postUrn, text)` | PATCH /rest/posts/{urn} | Update post text |
+| `likePost(postUrn)` | POST /rest/socialActions/{urn}/likes | Like a post |
+| `getProfileStats()` | GET /rest/networkSizes/{urn} | Follower count |
+| `searchPosts(query, count)` | GET /rest/posts?q=author | Search own posts by keyword |
 
-### Tools — PLANNED (not yet implemented)
+### Tools (`src/tools/`) — 19 MCP tools registered
 
-| Tool Name | Description | Needs |
-|-----------|-------------|-------|
-| `linkedin_get_post_stats` | Get impressions, likes, comments, shares, clicks for a post | API method + tool |
-| `linkedin_get_comments` | Read comments on a post | API method + tool |
-| `linkedin_reply_to_comment` | Reply to a specific comment | API method + tool |
-| `linkedin_delete_post` | Delete a published post | API method + tool |
-| `linkedin_create_post_with_image` | Single tool: upload image + create post in one step | Tool (API methods exist) |
-| `linkedin_get_profile_stats` | Get followers, profile views, search appearances | API method + tool |
-| `linkedin_edit_post` | Edit/update an existing post | API method + tool |
-| `linkedin_like_post` | Like a post | API method + tool |
-| `linkedin_search_posts` | Search posts by keyword/hashtag | API method + tool |
+#### LinkedIn — Content Creation (4 tools)
+
+| File | Lines | Tool Name | Status |
+|------|-------|-----------|--------|
+| `authenticate.tool.ts` | 53 | `linkedin_authenticate` | DONE |
+| `create-post.tool.ts` | 67 | `linkedin_create_post` | DONE |
+| `create-post-with-image.tool.ts` | 59 | `linkedin_create_post_with_image` | DONE |
+| `publish-article.tool.ts` | 80 | `linkedin_publish_article` | DONE |
+
+#### LinkedIn — Post Management (3 tools)
+
+| File | Lines | Tool Name | Status |
+|------|-------|-----------|--------|
+| `edit-post.tool.ts` | 27 | `linkedin_edit_post` | DONE |
+| `delete-post.tool.ts` | 26 | `linkedin_delete_post` | DONE |
+| `upload-media.tool.ts` | 39 | `linkedin_upload_media` | DONE |
+
+#### LinkedIn — Engagement (3 tools)
+
+| File | Lines | Tool Name | Status |
+|------|-------|-----------|--------|
+| `like-post.tool.ts` | 26 | `linkedin_like_post` | DONE |
+| `get-comments.tool.ts` | 38 | `linkedin_get_comments` | DONE |
+| `reply-to-comment.tool.ts` | 33 | `linkedin_reply_to_comment` | DONE |
+
+#### LinkedIn — Analytics (4 tools)
+
+| File | Lines | Tool Name | Status |
+|------|-------|-----------|--------|
+| `get-profile.tool.ts` | 31 | `linkedin_get_profile` | DONE |
+| `get-profile-stats.tool.ts` | 37 | `linkedin_get_profile_stats` | DONE |
+| `get-post-stats.tool.ts` | 34 | `linkedin_get_post_stats` | DONE |
+| `search-posts.tool.ts` | 42 | `linkedin_search_posts` | DONE |
+
+#### LinkedIn — Scheduling (3 tools)
+
+| File | Lines | Tool Name | Status |
+|------|-------|-----------|--------|
+| `schedule-post.tool.ts` | 64 | `linkedin_schedule_post` | DONE |
+| `list-scheduled.tool.ts` | 44 | `linkedin_list_scheduled` | DONE |
+| `cancel-scheduled.tool.ts` | 26 | `linkedin_cancel_scheduled` | DONE |
+
+#### Medium (2 tools)
+
+| File | Lines | Tool Name | Status |
+|------|-------|-----------|--------|
+| `medium-publish.tool.ts` | 67 | `medium_publish_article` | DONE |
+| `medium-profile.tool.ts` | 28 | `medium_get_profile` | DONE |
+
+| `index.ts` | 19 | — | Re-exports all 19 tool schemas + handlers |
 
 ### Services (`src/services/`)
 
@@ -109,6 +151,22 @@
 
 ---
 
+## OAuth Scopes
+
+| Scope | Purpose | Status |
+|-------|---------|--------|
+| `openid` | OpenID Connect auth | Active |
+| `profile` | Read profile info | Active |
+| `w_member_social` | Write posts, comments, likes | Active |
+| `r_member_social` | Read comments, analytics | NEW |
+| `r_liteprofile` | Read lite profile | NEW |
+| `r_organization_social` | Read org social data | NEW |
+| `w_organization_social` | Write org social data | NEW |
+
+Note: Users must re-authenticate after scope changes to pick up new permissions.
+
+---
+
 ## Tests (`tests/`)
 
 | File | Lines | Tests | What's covered |
@@ -121,40 +179,28 @@
 
 ### Missing Tests
 
-| File needed | Priority | What to test |
-|-------------|----------|--------------|
-| `tests/api/linkedin-client.test.ts` | HIGH | Post creation, profile fetch, image upload, error responses |
-| `tests/auth/auth-manager.test.ts` | MEDIUM | Auth URL generation, code exchange, token refresh |
-| `tests/tools/*.test.ts` | HIGH | Input validation, mock API, output format for each tool |
-
----
-
-## OAuth Scopes
-
-### Current
-
-`openid`, `profile`, `w_member_social`
-
-### Needed (for planned tools)
-
-`r_liteprofile`, `r_organization_social`, `r_member_social`, `w_organization_social`
+| File needed | Priority |
+|-------------|----------|
+| `tests/api/linkedin-client.test.ts` | HIGH |
+| `tests/auth/auth-manager.test.ts` | MEDIUM |
+| `tests/tools/*.test.ts` | HIGH |
 
 ---
 
 ## Build & Config Files
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `package.json` | DONE | ESM project, scripts: build/dev/test/lint/typecheck |
-| `tsconfig.json` | DONE | ES2022, NodeNext modules, strict mode |
-| `vitest.config.ts` | DONE | Test runner config |
-| `Dockerfile` | DONE | Multi-stage build (node:20-slim) |
-| `docker-compose.yml` | DONE | Container orchestration with env file |
-| `Makefile` | DONE | install, build, dev, test, lint, typecheck, docker-build, docker-run, check |
-| `.env.example` | DONE | Template for all env vars |
-| `.gitignore` | DONE | data/, node_modules/, dist/, .env |
-| `.eslintrc.cjs` | MISSING | ESLint config — `npm run lint` will fail |
-| `.prettierrc` | MISSING | Prettier formatting config |
+| File | Status |
+|------|--------|
+| `package.json` | DONE |
+| `tsconfig.json` | DONE |
+| `vitest.config.ts` | DONE |
+| `Dockerfile` | DONE |
+| `docker-compose.yml` | DONE |
+| `Makefile` | DONE |
+| `.env.example` | DONE |
+| `.gitignore` | DONE |
+| `.eslintrc.cjs` | MISSING |
+| `.prettierrc` | MISSING |
 
 ---
 
@@ -174,3 +220,5 @@ Home, Getting-Started, Installation, Quick-Start-Guide, LinkedIn-App-Setup, Medi
 6. **Token encryption** — AES-256-GCM with key derived via SHA-256
 7. **ESM imports** — all relative imports use `.js` extension
 8. **One file, one tool** — each MCP tool is a separate `.tool.ts` file with exported schema + handler
+9. **Shared error handler** — `makeErrorResult()` in server.ts wraps all tool errors consistently
+10. **Helper refactoring in API client** — `authHeaders()` and `handleApiError()` reduce duplication

@@ -20,6 +20,27 @@ export interface ArticlePostInput {
   visibility: string;
 }
 
+export interface PostStats {
+  impressions: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  clicks: number;
+}
+
+export interface PostComment {
+  commentUrn: string;
+  author: string;
+  text: string;
+  timestamp: number;
+}
+
+export interface ProfileStats {
+  followers: number;
+  profileViews: number | null;
+  searchAppearances: number | null;
+}
+
 export class LinkedInAPIClient {
   private client: AxiosInstance;
   private memberUrn: string | null = null;
@@ -36,13 +57,32 @@ export class LinkedInAPIClient {
     setupRetryInterceptor(this.client);
   }
 
+  private async authHeaders(): Promise<Record<string, string>> {
+    const token = await this.authManager.getValidToken();
+    return { Authorization: `Bearer ${token.accessToken}` };
+  }
+
+  private handleApiError(err: unknown, operation: string): never {
+    if (axios.isAxiosError(err) && err.response) {
+      this.logger.error({
+        status: err.response.status,
+        headers: err.response.headers,
+        data: err.response.data,
+      }, `LinkedIn ${operation} failed`);
+      throw new LinkedInAPIError(
+        err.response.status,
+        JSON.stringify(err.response.data),
+        err.response.data,
+      );
+    }
+    throw err;
+  }
+
   async getUserProfile(): Promise<UserProfile> {
     this.rateLimiter.checkLimit("api");
-    const token = await this.authManager.getValidToken();
+    const headers = await this.authHeaders();
 
-    const response = await this.client.get(LINKEDIN_API.ENDPOINTS.ME, {
-      headers: { Authorization: `Bearer ${token.accessToken}` },
-    });
+    const response = await this.client.get(LINKEDIN_API.ENDPOINTS.ME, { headers });
 
     this.rateLimiter.recordRequest("api");
     const profile = UserProfileSchema.parse(response.data);
@@ -60,7 +100,7 @@ export class LinkedInAPIClient {
     this.rateLimiter.checkLimit("posts");
     this.rateLimiter.checkLimit("api");
 
-    const token = await this.authManager.getValidToken();
+    const headers = await this.authHeaders();
     const author = await this.getMemberUrn();
 
     const body: Record<string, unknown> = {
@@ -92,22 +132,10 @@ export class LinkedInAPIClient {
       response = await this.client.post(
         LINKEDIN_API.ENDPOINTS.POSTS,
         body,
-        { headers: { Authorization: `Bearer ${token.accessToken}` } },
+        { headers },
       );
     } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response) {
-        this.logger.error({
-          status: err.response.status,
-          headers: err.response.headers,
-          data: err.response.data,
-        }, "LinkedIn createPost failed");
-        throw new LinkedInAPIError(
-          err.response.status,
-          JSON.stringify(err.response.data),
-          err.response.data,
-        );
-      }
-      throw err;
+      this.handleApiError(err, "createPost");
     }
 
     this.rateLimiter.recordRequest("posts");
@@ -129,7 +157,7 @@ export class LinkedInAPIClient {
     this.rateLimiter.checkLimit("posts");
     this.rateLimiter.checkLimit("api");
 
-    const token = await this.authManager.getValidToken();
+    const headers = await this.authHeaders();
     const author = await this.getMemberUrn();
 
     const articleContent: Record<string, unknown> = {
@@ -161,22 +189,10 @@ export class LinkedInAPIClient {
       response = await this.client.post(
         LINKEDIN_API.ENDPOINTS.POSTS,
         body,
-        { headers: { Authorization: `Bearer ${token.accessToken}` } },
+        { headers },
       );
     } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response) {
-        this.logger.error({
-          status: err.response.status,
-          headers: err.response.headers,
-          data: err.response.data,
-        }, "LinkedIn createArticlePost failed");
-        throw new LinkedInAPIError(
-          err.response.status,
-          JSON.stringify(err.response.data),
-          err.response.data,
-        );
-      }
-      throw err;
+      this.handleApiError(err, "createArticlePost");
     }
 
     this.rateLimiter.recordRequest("posts");
@@ -199,13 +215,13 @@ export class LinkedInAPIClient {
     imageUrn: string;
   }> {
     this.rateLimiter.checkLimit("api");
-    const token = await this.authManager.getValidToken();
+    const headers = await this.authHeaders();
     const owner = await this.getMemberUrn();
 
     const response = await this.client.post(
       LINKEDIN_API.ENDPOINTS.IMAGES_INIT,
       { initializeUploadRequest: { owner } },
-      { headers: { Authorization: `Bearer ${token.accessToken}` } },
+      { headers },
     );
 
     this.rateLimiter.recordRequest("api");
@@ -232,5 +248,184 @@ export class LinkedInAPIClient {
     });
 
     this.rateLimiter.recordRequest("api");
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // NEW METHODS — Post Analytics, Comments, Social Actions
+  // ═══════════════════════════════════════════════════════
+
+  async getPostStats(postUrn: string): Promise<PostStats> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+    const author = await this.getMemberUrn();
+
+    try {
+      const response = await this.client.get(
+        `${LINKEDIN_API.ENDPOINTS.SHARE_STATISTICS}?q=organizationalEntity&organizationalEntity=${encodeURIComponent(author)}&shares[0]=${encodeURIComponent(postUrn)}`,
+        { headers },
+      );
+
+      this.rateLimiter.recordRequest("api");
+
+      const elements = response.data?.elements ?? [];
+      if (elements.length === 0) {
+        return { impressions: 0, likes: 0, comments: 0, shares: 0, clicks: 0 };
+      }
+
+      const stats = elements[0]?.totalShareStatistics ?? {};
+      return {
+        impressions: stats.impressionCount ?? 0,
+        likes: stats.likeCount ?? 0,
+        comments: stats.commentCount ?? 0,
+        shares: stats.shareCount ?? 0,
+        clicks: stats.clickCount ?? 0,
+      };
+    } catch (err: unknown) {
+      this.handleApiError(err, "getPostStats");
+    }
+  }
+
+  async getComments(postUrn: string, count: number = 20): Promise<PostComment[]> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+
+    try {
+      const response = await this.client.get(
+        `${LINKEDIN_API.ENDPOINTS.SOCIAL_ACTIONS}/${encodeURIComponent(postUrn)}/comments?count=${count}`,
+        { headers },
+      );
+
+      this.rateLimiter.recordRequest("api");
+
+      const elements = response.data?.elements ?? [];
+      return elements.map((el: Record<string, unknown>) => ({
+        commentUrn: (el["$URN"] as string) ?? (el.commentUrn as string) ?? "",
+        author: (el.actor as string) ?? "",
+        text: ((el.message as Record<string, unknown>)?.text as string) ?? "",
+        timestamp: (el.created as Record<string, unknown>)?.time as number ?? 0,
+      }));
+    } catch (err: unknown) {
+      this.handleApiError(err, "getComments");
+    }
+  }
+
+  async replyToComment(
+    postUrn: string,
+    parentCommentUrn: string,
+    text: string,
+  ): Promise<string> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+    const actor = await this.getMemberUrn();
+
+    try {
+      const response = await this.client.post(
+        `${LINKEDIN_API.ENDPOINTS.SOCIAL_ACTIONS}/${encodeURIComponent(postUrn)}/comments`,
+        {
+          actor,
+          message: { text },
+          parentComment: parentCommentUrn,
+        },
+        { headers },
+      );
+
+      this.rateLimiter.recordRequest("api");
+      return (response.data?.["$URN"] as string) ?? "comment_created";
+    } catch (err: unknown) {
+      this.handleApiError(err, "replyToComment");
+    }
+  }
+
+  async deletePost(postUrn: string): Promise<void> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+
+    try {
+      await this.client.delete(
+        `${LINKEDIN_API.ENDPOINTS.POSTS}/${encodeURIComponent(postUrn)}`,
+        { headers },
+      );
+      this.rateLimiter.recordRequest("api");
+    } catch (err: unknown) {
+      this.handleApiError(err, "deletePost");
+    }
+  }
+
+  async editPost(postUrn: string, text: string): Promise<void> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+
+    try {
+      await this.client.patch(
+        `${LINKEDIN_API.ENDPOINTS.POSTS}/${encodeURIComponent(postUrn)}`,
+        { commentary: text },
+        { headers },
+      );
+      this.rateLimiter.recordRequest("api");
+    } catch (err: unknown) {
+      this.handleApiError(err, "editPost");
+    }
+  }
+
+  async likePost(postUrn: string): Promise<void> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+    const actor = await this.getMemberUrn();
+
+    try {
+      await this.client.post(
+        `${LINKEDIN_API.ENDPOINTS.SOCIAL_ACTIONS}/${encodeURIComponent(postUrn)}/likes`,
+        { actor, object: postUrn },
+        { headers },
+      );
+      this.rateLimiter.recordRequest("api");
+    } catch (err: unknown) {
+      this.handleApiError(err, "likePost");
+    }
+  }
+
+  async getProfileStats(): Promise<ProfileStats> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+    const memberUrn = await this.getMemberUrn();
+
+    try {
+      const response = await this.client.get(
+        `${LINKEDIN_API.ENDPOINTS.NETWORK_SIZES}/${encodeURIComponent(memberUrn)}?edgeType=FOLLOWER`,
+        { headers },
+      );
+
+      this.rateLimiter.recordRequest("api");
+
+      return {
+        followers: response.data?.firstDegreeSize ?? 0,
+        profileViews: null,
+        searchAppearances: null,
+      };
+    } catch (err: unknown) {
+      this.handleApiError(err, "getProfileStats");
+    }
+  }
+
+  async searchPosts(query: string, count: number = 10): Promise<Array<Record<string, unknown>>> {
+    this.rateLimiter.checkLimit("api");
+    const headers = await this.authHeaders();
+
+    try {
+      const response = await this.client.get(
+        `${LINKEDIN_API.ENDPOINTS.POSTS}?q=author&author=${encodeURIComponent(await this.getMemberUrn())}&count=${count}`,
+        { headers },
+      );
+
+      this.rateLimiter.recordRequest("api");
+
+      const elements = response.data?.elements ?? [];
+      return elements.filter((el: Record<string, unknown>) => {
+        const commentary = (el.commentary as string) ?? "";
+        return commentary.toLowerCase().includes(query.toLowerCase());
+      });
+    } catch (err: unknown) {
+      this.handleApiError(err, "searchPosts");
+    }
   }
 }
