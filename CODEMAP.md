@@ -31,8 +31,8 @@
 
 | File | Lines | Purpose |
 |------|-------|---------|
-| `env.ts` | 51 | Zod schema validating all env vars at startup |
-| `linkedin-api.ts` | 50 | All LinkedIn API constants: URLs, version (`202601`), endpoints, headers, limits, scopes |
+| `env.ts` | 57 | Zod schema validating all env vars at startup (primary app + optional community app + Telegram + Medium) |
+| `linkedin-api.ts` | 52 | All LinkedIn API constants: URLs, version (`202601`), endpoints, headers, limits, primary + community scopes |
 
 ### Auth (`src/auth/`)
 
@@ -41,8 +41,8 @@
 | `token-store.ts` | 7 | `TokenStore` interface (load/save/delete) |
 | `file-token-store.ts` | 65 | AES-256-GCM encrypted file storage (`data/tokens.enc`) |
 | `env-token-store.ts` | 33 | Read-only token store from env vars (for CI/CD) |
-| `auth-manager.ts` | 152 | Full OAuth 2.0 flow: auth URL, code exchange, token refresh |
-| `callback-server.ts` | 91 | Temporary HTTP server on port 3456 for OAuth callback |
+| `auth-manager.ts` | 153 | Full OAuth 2.0 flow: auth URL, code exchange, token refresh. Accepts custom scopes + callback port for dual-app support. |
+| `callback-server.ts` | 91 | Temporary HTTP server for OAuth callback (port 3456 primary, 3457 community) |
 
 ### API Clients (`src/api/`)
 
@@ -63,7 +63,7 @@
 | `createArticlePost(input)` | POST /rest/posts | Create article-style post |
 | `initializeImageUpload()` | POST /rest/images?action=initializeUpload | Get upload URL + image URN |
 | `uploadImageBinary(url, data, mime)` | PUT {uploadUrl} | Upload raw image binary |
-| `getPostStats(postUrn)` | GET /rest/organizationalEntityShareStatistics | Impressions, likes, comments, shares, clicks |
+| `getPostStats(postUrn)` | GET /rest/socialActions/{urn} | Likes, comments, shares (impressions/clicks require Marketing API) |
 | `getComments(postUrn, count)` | GET /rest/socialActions/{urn}/comments | Read comments on a post |
 | `replyToComment(postUrn, commentUrn, text)` | POST /rest/socialActions/{urn}/comments | Reply to a comment |
 | `deletePost(postUrn)` | DELETE /rest/posts/{urn} | Delete a post |
@@ -72,7 +72,7 @@
 | `getProfileStats()` | GET /rest/networkSizes/{urn} | Follower count |
 | `searchPosts(query, count)` | GET /rest/posts?q=author | Search own posts by keyword |
 
-### Tools (`src/tools/`) — 19 MCP tools registered
+### Tools (`src/tools/`) — up to 20 MCP tools (15 always + 5 when community app configured)
 
 #### LinkedIn — Content Creation (4 tools)
 
@@ -126,7 +126,7 @@ These tools only appear when `LINKEDIN_COMMUNITY_CLIENT_ID` is configured.
 | `medium-publish.tool.ts` | 67 | `medium_publish_article` | — |
 | `medium-profile.tool.ts` | 28 | `medium_get_profile` | — |
 
-| `index.ts` | 19 | Re-exports all 19 tool schemas + handlers | — |
+| `index.ts` | 20 | Re-exports all 20 tool schemas + handlers | — |
 
 ### Services (`src/services/`)
 
@@ -233,3 +233,4 @@ Home, Getting-Started, Installation, Quick-Start-Guide, LinkedIn-App-Setup, Medi
 9. **Shared error handler** — `makeErrorResult()` in server.ts wraps all tool errors consistently
 10. **Helper refactoring in API client** — `authHeaders()` and `handleApiError()` reduce duplication
 11. **MSW for testing** — all HTTP intercepted at network level, no axios mocking, zero real API calls
+12. **Dual LinkedIn apps** — LinkedIn forces "Community Management API" to be sole product on an app, so engagement tools use a separate app with its own OAuth flow, token store, and callback port
